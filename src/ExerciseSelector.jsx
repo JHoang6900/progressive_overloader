@@ -1,5 +1,7 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import Combobox from './ComboBox' // Import the Combobox component
+
 import {
   ChevronLeftIcon,
   MoreVerticalIcon,
@@ -100,18 +102,13 @@ function ExerciseCard({ exercise, index }) {
   const [isExpanded, setIsExpanded] = useState(false)
   const completedSets = exercise.sets.length 
   const totalSets = exercise.sets.length
+
+
+  const badgeStyle = "px-3 py-1 text-sm font-medium rounded-lg bg-zinc-800/80"
   
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.08, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-    >
-      <motion.button
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full text-left"
-        whileTap={{ scale: 0.98 }}
-      >
+
+      <div>
         <div className="p-4 mb-3 border bg-zinc-900/60 backdrop-blur-xl border-zinc-800/50 rounded-xl">
           {/* Card Header */}
           <div className="flex items-center justify-between">
@@ -120,10 +117,10 @@ function ExerciseCard({ exercise, index }) {
                 <ExerciseIcon type={exercise.icon} />
               </div>
               <div className='flex flex-col gap-1'>
-                <h3 className="px-3 py-1 text-sm font-medium text-white rounded-lg bg-zinc-800/80">
-                  {exercise.name}
+                <h3 className={`${badgeStyle} text-white`}>
+                  <Combobox />
                 </h3>
-                <p className="px-3 py-1 text-sm font-medium rounded-lg text-zinc-500 bg-zinc-800/80">
+                <p className={`${badgeStyle} text-zinc-500`}>
                   Target: {exercise.targetReps} reps
                 </p>
               </div>
@@ -139,20 +136,17 @@ function ExerciseCard({ exercise, index }) {
               {/* TODO: INSERT EDIT ICON HERE */}
               {/* <CircleEllipsis className="w-5 h-5 text-white" /> */}
 
-              <motion.div
-                animate={{ rotate: isExpanded ? 180 : 0 }}
-                transition={{ duration: 0.2 }}
-              >
+             
                 <ChevronDownIcon className="w-5 h-5 text-zinc-500" />
-              </motion.div>
+              </div>
             </div>
           </div>
 
 
   
         </div>
-      </motion.button>
-    </motion.div>
+ 
+
   )
 }
 
