@@ -1,0 +1,289 @@
+import React, { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  ChevronLeftIcon,
+  MoreVerticalIcon,
+  PlusIcon,
+  ChevronDownIcon,
+  DumbbellIcon,
+  MapPinIcon,
+  UserIcon,
+  CalendarIcon,
+  ClockIcon,
+  TargetIcon,
+  FlameIcon,
+  MessageCircleIcon,
+  CircleEllipsis
+} from 'lucide-react'
+
+const exercises = [
+  {
+    id: '1',
+    name: 'Barbell Benchpress',
+    icon: 'dumbbell',
+    targetReps: '8-10',
+    sets: [
+      { weight: '45+15lbs', reps: '5' },
+      { weight: '45+15lbs', reps: '5' },
+      { weight: '45+15lbs', reps: '5' },
+      { weight: '45+15lbs', reps: '4' },
+      { weight: '45+15lbs', reps: '4' },
+    ],
+    notes: '5x5 last 2 sets were 5x4',
+  },
+  {
+    id: '2',
+    name: 'Pull-Ups',
+    icon: 'target',
+    targetReps: '8-10',
+    sets: [
+      { weight: 'Green', reps: '10', isGreen: true },
+      { weight: 'Green', reps: '5 | 3', isGreen: true },
+      { weight: 'Green', reps: '5 | 3', isGreen: true },
+      { weight: 'Green', reps: '5 | 3', isGreen: true },
+    ],
+  },
+  {
+    id: '3',
+    name: 'Incline Dumbbell Curl',
+    icon: 'dumbbell',
+    targetReps: '8-10',
+    sets: [
+      { weight: '20lbs', reps: '10' },
+      { weight: '20lbs', reps: '5' },
+      { weight: '15lbs', reps: '10' },
+      { weight: '15lbs', reps: '10' },
+    ],
+  },
+  {
+    id: '4',
+    name: 'Leg Extensions',
+    icon: 'flame',
+    targetReps: '7-9',
+    sets: [
+      { weight: '85lbs', reps: '10', isRed: true },
+      { weight: '100lbs', reps: '10', isRed: true },
+      { weight: '100lbs', reps: '10', isRed: true },
+      { weight: '100lbs', reps: '10', isRed: true },
+    ],
+  },
+  {
+    id: '5',
+    name: 'Spread Out',
+    icon: 'dumbbell',
+    targetReps: '8-10',
+    sets: [
+      { weight: '75lbs', reps: '7' },
+      { weight: '75lbs', reps: '10' },
+      { weight: '75lbs', reps: '10' },
+      { weight: '75lbs', reps: '10' },
+    ],
+  },
+]
+
+// switch function for exercise icons
+function ExerciseIcon({ type }) {
+  const iconClass = 'w-5 h-5'
+  switch (type) {
+    case 'dumbbell':
+      return <DumbbellIcon className={iconClass} />
+    case 'target':
+      return <TargetIcon className={iconClass} />
+    case 'flame':
+      return <FlameIcon className={iconClass} />
+    default:
+      return <DumbbellIcon className={iconClass} />
+  }
+}
+
+function ExerciseCard({ exercise, index }) {
+  const [isExpanded, setIsExpanded] = useState(false)
+  const completedSets = exercise.sets.length 
+  const totalSets = exercise.sets.length
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.08, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+    >
+      <motion.button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full text-left"
+        whileTap={{ scale: 0.98 }}
+      >
+        <div className="p-4 mb-3 border bg-zinc-900/60 backdrop-blur-xl border-zinc-800/50 rounded-xl">
+          {/* Card Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-zinc-800/80 text-zinc-300">
+                <ExerciseIcon type={exercise.icon} />
+              </div>
+              <div>
+                <h3 className="px-3 py-1 text-sm font-medium text-white rounded-lg bg-zinc-800/80">
+                  {exercise.name}
+                </h3>
+                <p className="text-sm text-zinc-500">
+                  Target: {exercise.targetReps} reps
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-sm font-medium text-white">
+                  {completedSets}/{totalSets}
+                </p>
+                <p className="text-xs text-zinc-500">sets</p>
+              </div>
+
+              {/* TODO: INSERT EDIT ICON HERE */}
+              {/* <CircleEllipsis className="w-5 h-5 text-white" /> */}
+
+              <motion.div
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <ChevronDownIcon className="w-5 h-5 text-zinc-500" />
+              </motion.div>
+            </div>
+          </div>
+
+
+          {/* Expanded Content */}
+          <AnimatePresence>
+            {isExpanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: 'auto', opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+                className="overflow-hidden"
+              >
+                <div className="pt-4 mt-4 space-y-2 border-t border-zinc-800/50">
+                  {exercise.sets.map((set, setIndex) => (
+                    <motion.div
+                      key={setIndex}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: setIndex * 0.05 }}
+                      className="flex items-center justify-between px-3 py-2 rounded-lg bg-zinc-800/30"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center justify-center w-6 h-6 text-xs font-medium rounded-full bg-zinc-700/50 text-zinc-400">
+                          {setIndex + 1}
+                        </span>
+                        <span className={`text-sm font-medium ${set.isGreen ? 'text-emerald-400' : 'text-white'}`}>
+                          {set.weight}
+                        </span>
+                      </div>
+                      <span className={`text-sm ${set.isRed ? 'text-rose-400' : 'text-zinc-400'}`}>
+                        {set.reps} reps
+                      </span>
+                    </motion.div>
+                  ))}
+
+                  {exercise.notes && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: exercise.sets.length * 0.05 }}
+                      className="p-3 mt-3 border rounded-lg bg-zinc-800/20 border-zinc-700/30"
+                    >
+                      <p className="text-sm text-zinc-400">
+                        <span className="text-zinc-500">Note:</span>{' '}
+                        {exercise.notes}
+                      </p>
+                    </motion.div>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </motion.button>
+    </motion.div>
+  )
+}
+
+
+
+export function ExerciseSelector() {
+  const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0)
+  return (
+    <div className="w-full min-h-screen bg-zinc-950">
+      {/* App Header */}
+      <motion.header
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="sticky top-0 z-50 border-b bg-zinc-950/80 backdrop-blur-xl border-zinc-800/50"
+      >
+        <div className="flex items-center justify-between px-4 py-3">
+          <button className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60">
+            <ChevronLeftIcon className="w-5 h-5" />
+          </button>
+          <div className="text-center">
+            <h1 className="text-lg font-semibold text-white">
+              Full Body Compound
+            </h1>
+            <p className="text-xs text-zinc-500">v2 • Jan 21, 2026</p>
+          </div>
+          <button className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60">
+            <MoreVerticalIcon className="w-5 h-5" />
+          </button>
+        </div>
+      </motion.header>
+
+      {/* Main Content */}
+      <main className="px-4 py-6 pb-24">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="flex items-center justify-between mb-4"
+        >
+          <h2 className="text-sm font-medium tracking-wide uppercase text-zinc-400">
+            Exercises
+          </h2>
+          <span className="text-sm text-zinc-600">
+            {exercises.length} total
+          </span>
+        </motion.div>
+
+        {/* Exercise Cards */}
+        <div>
+          {exercises.map((exercise, index) => (
+            <ExerciseCard key={exercise.id} exercise={exercise} index={index} />
+          ))}
+        </div>
+
+        {/* Comments Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="mt-6"
+        >
+        </motion.div>
+      </main>
+    </div>
+  )
+}
+
+export default ExerciseSelector
+
+
+
+
+
+
+
+// COMBOBOX EDITABLE STYLING: 
+//  {isBadge ? (
+//         <span className="px-3 py-1 text-sm font-medium text-white rounded-lg bg-zinc-800/80">
+//           {value}
+//         </span>
+//       ) : (
+//         <span className="text-sm text-white">{value}</span>
+//       )}

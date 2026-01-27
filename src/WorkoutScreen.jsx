@@ -203,9 +203,23 @@ function ExerciseCard({
                 <ExerciseIcon type={exercise.icon} />
               </div>
               <div>
-                <h3 className="text-base font-semibold text-white">
+
+
+                
+                {/* <h3 className="text-base font-semibold text-white">
+                  {exercise.name}
+                </h3> */}
+
+
+                <h3 className="px-3 py-1 text-sm font-medium text-white rounded-lg bg-zinc-800/80">
                   {exercise.name}
                 </h3>
+
+              
+
+
+
+
                 <p className="text-sm text-zinc-500">
                   Target: {exercise.targetReps} reps
                 </p>
@@ -378,7 +392,7 @@ function MetadataChip({ icon, text }) {
     </div>
   )
 }
-export function App() {
+export function WorkoutScreen() {
   const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0)
   return (
     <div className="w-full min-h-screen bg-zinc-950">
@@ -543,4 +557,17 @@ export function App() {
     </div>
   )
 }
-export default App
+export default WorkoutScreen
+
+
+
+
+
+
+//  {isBadge ? (
+//         <span className="px-3 py-1 text-sm font-medium text-white rounded-lg bg-zinc-800/80">
+//           {value}
+//         </span>
+//       ) : (
+//         <span className="text-sm text-white">{value}</span>
+//       )}
