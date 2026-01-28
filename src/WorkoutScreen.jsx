@@ -16,142 +16,6 @@ import {
   CircleEllipsis
 } from 'lucide-react'
 
-const exercises = [
-  {
-    id: '1',
-    name: 'Barbell Benchpress',
-    icon: 'dumbbell',
-    targetReps: '8-10',
-    sets: [
-      {
-        weight: '45+15lbs',
-        reps: '5',
-      },
-      {
-        weight: '45+15lbs',
-        reps: '5',
-      },
-      {
-        weight: '45+15lbs',
-        reps: '5',
-      },
-      {
-        weight: '45+15lbs',
-        reps: '4',
-      },
-      {
-        weight: '45+15lbs',
-        reps: '4',
-      },
-    ],
-    notes: '5x5 last 2 sets were 5x4',
-  },
-  {
-    id: '2',
-    name: 'Pull-Ups',
-    icon: 'target',
-    targetReps: '8-10',
-    sets: [
-      {
-        weight: 'Green',
-        reps: '10',
-        isGreen: true,
-      },
-      {
-        weight: 'Green',
-        reps: '5 | 3',
-        isGreen: true,
-      },
-      {
-        weight: 'Green',
-        reps: '5 | 3',
-        isGreen: true,
-      },
-      {
-        weight: 'Green',
-        reps: '5 | 3',
-        isGreen: true,
-      },
-    ],
-  },
-  {
-    id: '3',
-    name: 'Incline Dumbbell Curl',
-    icon: 'dumbbell',
-    targetReps: '8-10',
-    sets: [
-      {
-        weight: '20lbs',
-        reps: '10',
-      },
-      {
-        weight: '20lbs',
-        reps: '5',
-      },
-      {
-        weight: '15lbs',
-        reps: '10',
-      },
-      {
-        weight: '15lbs',
-        reps: '10',
-      },
-    ],
-  },
-  {
-    id: '4',
-    name: 'Leg Extensions',
-    icon: 'flame',
-    targetReps: '7-9',
-    sets: [
-      {
-        weight: '85lbs',
-        reps: '10',
-        isRed: true,
-      },
-      {
-        weight: '100lbs',
-        reps: '10',
-        isRed: true,
-      },
-      {
-        weight: '100lbs',
-        reps: '10',
-        isRed: true,
-      },
-      {
-        weight: '100lbs',
-        reps: '10',
-        isRed: true,
-      },
-    ],
-  },
-  {
-    id: '5',
-    name: 'Spread Out',
-    icon: 'dumbbell',
-    targetReps: '8-10',
-    sets: [
-      {
-        weight: '75lbs',
-        reps: '7',
-      },
-      {
-        weight: '75lbs',
-        reps: '10',
-      },
-      {
-        weight: '75lbs',
-        reps: '10',
-      },
-      {
-        weight: '75lbs',
-        reps: '10',
-      },
-    ],
-  },
-]
-
 
 // switch function for exercise icons
 function ExerciseIcon({ type }) {
@@ -165,6 +29,14 @@ function ExerciseIcon({ type }) {
       return <FlameIcon className={iconClass} />
   }
 }
+
+
+
+function onEdit() {
+  
+}
+
+
 function ExerciseCard({
   exercise,
   index,
@@ -392,7 +264,7 @@ function MetadataChip({ icon, text }) {
     </div>
   )
 }
-export function WorkoutScreen() {
+export function WorkoutScreen({exercises, onEdit }) {
   const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0)
   return (
     <div className="w-full min-h-screen bg-zinc-950">
@@ -421,9 +293,12 @@ export function WorkoutScreen() {
             </h1>
             <p className="text-xs text-zinc-500">v2 • Jan 21, 2026</p>
           </div>
-          <button className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60">
+
+          <button className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+          onClick={onEdit}>
             <MoreVerticalIcon className="w-5 h-5" />
           </button>
+          
         </div>
 
         {/* Metadata Chips */}
@@ -557,17 +432,4 @@ export function WorkoutScreen() {
     </div>
   )
 }
-export default WorkoutScreen
-
-
-
-
-
-
-//  {isBadge ? (
-//         <span className="px-3 py-1 text-sm font-medium text-white rounded-lg bg-zinc-800/80">
-//           {value}
-//         </span>
-//       ) : (
-//         <span className="text-sm text-white">{value}</span>
-//       )}
+export default WorkoutScreen;

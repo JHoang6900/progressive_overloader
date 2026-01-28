@@ -17,126 +17,8 @@ import {
   FlameIcon,
   MessageCircleIcon,
   CircleEllipsis,
-  SaveIcon
+  SaveIcon,
 } from "lucide-react";
-
-const exercises = [
-  {
-    id: "1",
-    name: "Barbell Benchpress",
-    icon: "dumbbell",
-    targetReps: "8-10",
-    sets: [
-      { weight: "45+15lbs", reps: "5" },
-      { weight: "45+15lbs", reps: "5" },
-      { weight: "45+15lbs", reps: "5" },
-      { weight: "45+15lbs", reps: "4" },
-      { weight: "45+15lbs", reps: "4" },
-    ],
-    notes: "5x5 last 2 sets were 5x4",
-  },
-  {
-    id: "2",
-    name: "Pull-Ups",
-    icon: "target",
-    targetReps: "8-10",
-    sets: [
-      { weight: "Green", reps: "10", isGreen: true },
-      { weight: "Green", reps: "5 | 3", isGreen: true },
-      { weight: "Green", reps: "5 | 3", isGreen: true },
-      { weight: "Green", reps: "5 | 3", isGreen: true },
-    ],
-  },
-  {
-    id: "3",
-    name: "Incline Dumbbell Curl",
-    icon: "dumbbell",
-    targetReps: "8-10",
-    sets: [
-      { weight: "20lbs", reps: "10" },
-      { weight: "20lbs", reps: "5" },
-      { weight: "15lbs", reps: "10" },
-      { weight: "15lbs", reps: "10" },
-    ],
-  },
-  {
-    id: "4",
-    name: "Leg Extensions",
-    icon: "flame",
-    targetReps: "7-9",
-    sets: [
-      { weight: "85lbs", reps: "10", isRed: true },
-      { weight: "100lbs", reps: "10", isRed: true },
-      { weight: "100lbs", reps: "10", isRed: true },
-      { weight: "100lbs", reps: "10", isRed: true },
-    ],
-  },
-  {
-    id: "5",
-    name: "Spread Out",
-    icon: "dumbbell",
-    targetReps: "8-10",
-    sets: [
-      { weight: "75lbs", reps: "7" },
-      { weight: "75lbs", reps: "10" },
-      { weight: "75lbs", reps: "10" },
-      { weight: "75lbs", reps: "10" },
-    ],
-  },
-];
-
-
-function saveEdits() {
-  const updatedExercises = exercises.map((exercise) => {
-    if (exercise.name === selectedExercise) {
-      return {
-        ...exercise,
-        sets: exercise.sets.map((set) => {
-          if (set.weight === selectedWeight && set.reps === selectedReps) {
-            return {
-              ...set,
-              weight: newWeight,
-              reps: newReps,
-            };
-          }
-          return set;
-        }),
-      };
-    }
-    return exercise;
-  });
-
-  const updatedSelectedExercise = updatedExercises.find(
-    (exercise) => exercise.name === selectedExercise
-  );
-
-  const updatedSelectedSets = updatedSelectedExercise.sets.map((set) => {
-    if (set.weight === selectedWeight && set.reps === selectedReps) {
-      return {
-        ...set,
-        weight: newWeight,
-        reps: newReps,
-      };
-    }
-    return set;
-  });
-
-  const updatedSelectedExerciseWithNewSets = {
-    ...updatedSelectedExercise,
-    sets: updatedSelectedSets,
-  };
-
-  const updatedSelectedExercises = exercises.map((exercise) =>
-    exercise.name === selectedExercise
-      ? updatedSelectedExerciseWithNewSets
-      : exercise
-  );
-
-  const newSelectedRepRange = selectedRepRange === "8-10" ? "6-8" : "8-10";
-
-  setExercises(updatedSelectedExercises);
-  setSelectedRepRange(newSelectedRepRange);
-}
 
 // switch function for exercise icons
 function ExerciseIcon({ type }) {
@@ -153,7 +35,7 @@ function ExerciseIcon({ type }) {
   }
 }
 
-function ExerciseCard({ exercise, index }) {
+function ExerciseCard({ exercise, index, onUpdateName, onUpdateRepRange }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const completedSets = exercise.sets.length;
   const totalSets = exercise.sets.length;
@@ -176,16 +58,22 @@ function ExerciseCard({ exercise, index }) {
               <h3 className={`${badgeStyle} text-white`}>
                 <Combobox
                   items={ALL_EXERCISES}
-                  value={selectedExercise}
-                  onSelect={setSelectedExercise}
+                  // FIX A: Use the PROP value, not local state
+                  // supposedly .tolowerCase() is needed for matching in Combobox
+                  value={exercise.name.toLowerCase()}
+                  // FIX B: Call the Parent's function, not a local setter
+                  onSelect={(newName) => onUpdateName(newName)}
                   placeholder="Select exercise..."
                 />
               </h3>
               <p className={`${badgeStyle} text-zinc-500`}>
                 <Combobox
                   items={REP_RANGES}
-                  value={selectedRepRange}
-                  onSelect={setSelectedRepRange}
+                  // FIX A: Use the PROP value, not local state
+                  // supposedly .tolowerCase() is needed for matching in Combobox
+                  value={exercise.targetReps.toLowerCase()}
+                  // FIX B: Call the Parent's function, not a local setter
+                  onSelect={(newRepRange) => onUpdateRepRange(newRepRange)}
                   placeholder="Select Rep Range..."
                 />
               </p>
@@ -210,8 +98,23 @@ function ExerciseCard({ exercise, index }) {
   );
 }
 
-export function ExerciseSelector() {
- 
+export function ExerciseSelector({ exercises, onSave, onCancel }) {
+  const [localExercises, setLocalExercises] = useState(exercises);
+
+  const updateExerciseName = (id, newName) => {
+    const updated = localExercises.map((ex) =>
+      ex.id === id ? { ...ex, name: newName } : ex,
+    );
+    setLocalExercises(updated);
+  };
+
+  const updateExerciseRepRange = (id, newRepRange) => {
+    const updated = localExercises.map((ex) =>
+      ex.id === id ? { ...ex, targetReps: newRepRange } : ex,
+    );
+    setLocalExercises(updated);
+  };
+
   return (
     <div className="w-full min-h-screen bg-zinc-950">
       {/* App Header */}
@@ -231,8 +134,12 @@ export function ExerciseSelector() {
             </h1>
             <p className="text-xs text-zinc-500">v2 • Jan 21, 2026</p>
           </div>
-          <button className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60"
-          onClick={saveEdits}>
+          <button
+            className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+            onClick={() => {
+              onSave(localExercises);
+            }}
+          >
             <SaveIcon className="w-5 h-5" />
           </button>
         </div>
@@ -257,15 +164,19 @@ export function ExerciseSelector() {
 
         {/* Exercise Cards */}
         <div>
-          {exercises.map(
-            (
-              exercise,
-              index, // exercise prop is where it gets passed in as a singular exercise.
-            ) => (
+          {localExercises.map((exercise, index) => (
               <ExerciseCard
                 key={exercise.id}
                 exercise={exercise}
                 index={index}
+                onUpdateName={(newName) =>
+                  updateExerciseName(exercise.id, newName)
+                }
+                 onUpdateRepRange={(newRepRange) =>
+                  updateExerciseRepRange(exercise.id, newRepRange)
+                }
+
+
               />
             ),
           )}
@@ -284,4 +195,3 @@ export function ExerciseSelector() {
 }
 
 export default ExerciseSelector;
-
