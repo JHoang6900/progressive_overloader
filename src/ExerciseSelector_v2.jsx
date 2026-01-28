@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Combobox from './ComboBox' // Import the Combobox component
+// import Combobox from './ComboBox'
+import { Combobox } from "@/components/ui/combobox"
 
 import {
   ChevronLeftIcon,
@@ -17,6 +18,17 @@ import {
   MessageCircleIcon,
   CircleEllipsis
 } from 'lucide-react'
+
+
+
+const AllExercisesList = [
+  { value: "barbell benchpress", label: "Barbell Benchpress" },
+  { value: "dumbbell bench press", label: "Dumbbell Bench Press" },
+  { value: "pull-ups", label: "Pull-Ups" },
+  { value: "squat", label: "Squat" },
+]
+
+
 
 const exercises = [
   {
@@ -103,6 +115,8 @@ function ExerciseCard({ exercise, index }) {
   const completedSets = exercise.sets.length 
   const totalSets = exercise.sets.length
 
+  const [selected, setSelected] = useState(exercise.name);
+
 
   const badgeStyle = "px-3 py-1 text-sm font-medium rounded-lg bg-zinc-800/80"
   
@@ -118,7 +132,14 @@ function ExerciseCard({ exercise, index }) {
               </div>
               <div className='flex flex-col gap-1'>
                 <h3 className={`${badgeStyle} text-white`}>
-                  <Combobox />
+                  <Combobox
+                  
+       items={AllExercisesList}
+       value={selected} 
+       onSelect={setSelected} 
+       placeholder="Select exercise..."
+                  
+                  />
                 </h3>
                 <p className={`${badgeStyle} text-zinc-500`}>
                   Target: {exercise.targetReps} reps

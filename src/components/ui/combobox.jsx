@@ -32,8 +32,8 @@ export function Combobox({ items, placeholder = "Select item...", onSelect, valu
           className="justify-between w-full bg-zinc-900 border-zinc-800 text-zinc-300 hover:bg-zinc-800 hover:text-white"
         >
           {value
-            ? items.find((item) => item.value === value)?.label
-            : placeholder}
+  ? (items.find((item) => item.value === value)?.label || value) // <--- Added fallback
+  : placeholder}
           <ChevronsUpDown className="w-4 h-4 ml-2 opacity-50 shrink-0" />
         </Button>
       </PopoverTrigger>
