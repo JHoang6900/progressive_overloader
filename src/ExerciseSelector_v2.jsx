@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 // import Combobox from './ComboBox'
 import { Combobox } from "@/components/ui/combobox"
+import { ALL_EXERCISES } from './data/exercises'
 
 import {
   ChevronLeftIcon,
@@ -18,15 +19,6 @@ import {
   MessageCircleIcon,
   CircleEllipsis
 } from 'lucide-react'
-
-
-
-const AllExercisesList = [
-  { value: "barbell benchpress", label: "Barbell Benchpress" },
-  { value: "dumbbell bench press", label: "Dumbbell Bench Press" },
-  { value: "pull-ups", label: "Pull-Ups" },
-  { value: "squat", label: "Squat" },
-]
 
 
 
@@ -134,7 +126,7 @@ function ExerciseCard({ exercise, index }) {
                 <h3 className={`${badgeStyle} text-white`}>
                   <Combobox
                   
-       items={AllExercisesList}
+       items={ALL_EXERCISES}
        value={selected} 
        onSelect={setSelected} 
        placeholder="Select exercise..."
