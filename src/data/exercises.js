@@ -13,3 +13,13 @@ export const ALL_EXERCISES = [
   { value: "squat", label: "Squat" },
   { value: "deadlift", label: "Deadlift" },
 ]
+
+export const REP_RANGES = [
+  { value: "3-5", label: "3-5 reps" },
+  { value: "5-7", label: "5-7 reps" },
+  { value: "8-10", label: "8-10 reps" },
+  { value: "10-12", label: "10-12 reps" },
+//   { value: "12-14", label: "12-14 reps" },
+//   { value: "15-20", label: "15-20 reps" },
+]
+

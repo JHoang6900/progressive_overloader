@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Combobox from './ComboBox'
+import Combobox from './components/ui/archived/ComboBox'
 // import { Combobox } from "@/components/ui/combobox"
 
 import {
