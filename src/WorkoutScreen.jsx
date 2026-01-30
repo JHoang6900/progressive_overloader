@@ -83,9 +83,12 @@ function ExerciseCard({
                 </h3> */}
 
 
-                <h3 className="px-3 py-1 text-sm font-medium text-white rounded-lg bg-zinc-800/80">
+                <h3 className="text-sm font-medium text-white ">
                   {exercise.name}
                 </h3>
+
+
+                
 
               
 
