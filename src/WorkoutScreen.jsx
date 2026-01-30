@@ -1,49 +1,36 @@
-import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React, { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeftIcon,
   MoreVerticalIcon,
   PlusIcon,
   ChevronDownIcon,
   DumbbellIcon,
-  MapPinIcon,
-  UserIcon,
-  CalendarIcon,
   ClockIcon,
   TargetIcon,
   FlameIcon,
   MessageCircleIcon,
-  CircleEllipsis
-} from 'lucide-react'
+} from "lucide-react";
 
+import WorkoutHeader from "./WorkoutHeader.jsx";
 
 // switch function for exercise icons
 function ExerciseIcon({ type }) {
-  const iconClass = 'w-5 h-5'
+  const iconClass = "w-5 h-5";
   switch (type) {
-    case 'dumbbell':
-      return <DumbbellIcon className={iconClass} />
-    case 'target':
-      return <TargetIcon className={iconClass} />
-    case 'flame':
-      return <FlameIcon className={iconClass} />
+    case "dumbbell":
+      return <DumbbellIcon className={iconClass} />;
+    case "target":
+      return <TargetIcon className={iconClass} />;
+    case "flame":
+      return <FlameIcon className={iconClass} />;
   }
 }
 
-
-
-function onEdit() {
-  
-}
-
-
-function ExerciseCard({
-  exercise,
-  index,
-}) {
-  const [isExpanded, setIsExpanded] = useState(false)
-  const completedSets = exercise.sets.length // For demo purposes, assuming all sets are completed
-  const totalSets = exercise.sets.length
+function ExerciseCard({ exercise, index }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const completedSets = exercise.sets.length; // For demo purposes, assuming all sets are completed
+  const totalSets = exercise.sets.length;
   return (
     <motion.div
       initial={{
@@ -75,25 +62,13 @@ function ExerciseCard({
                 <ExerciseIcon type={exercise.icon} />
               </div>
               <div>
-
-
-                
                 {/* <h3 className="text-base font-semibold text-white">
                   {exercise.name}
                 </h3> */}
 
-
                 <h3 className="text-sm font-medium text-white ">
                   {exercise.name}
                 </h3>
-
-
-                
-
-              
-
-
-
 
                 <p className="text-sm text-zinc-500">
                   Target: {exercise.targetReps} reps
@@ -108,9 +83,10 @@ function ExerciseCard({
                 <p className="text-xs text-zinc-500">sets</p>
               </div>
 
-                {/* TODO: INSERT EDIT ICON HERE */}          
-                {/* <CircleEllipsis className="w-5 h-5 text-white" /> */}
-                
+              {/* TODO: INSERT EDIT ICON HERE */}
+
+              {/* <CircleEllipsis className="w-5 h-5 text-white" /> */}
+
               <motion.div
                 animate={{
                   rotate: isExpanded ? 180 : 0,
@@ -119,8 +95,6 @@ function ExerciseCard({
                   duration: 0.2,
                 }}
               >
-              
-              
                 <ChevronDownIcon className="w-5 h-5 text-zinc-500" />
               </motion.div>
             </div>
@@ -139,7 +113,7 @@ function ExerciseCard({
               transition={{
                 delay: index * 0.08 + 0.3,
                 duration: 0.6,
-                ease: 'easeOut',
+                ease: "easeOut",
               }}
             />
           </div>
@@ -153,7 +127,7 @@ function ExerciseCard({
                   opacity: 0,
                 }}
                 animate={{
-                  height: 'auto',
+                  height: "auto",
                   opacity: 1,
                 }}
                 exit={{
@@ -188,13 +162,13 @@ function ExerciseCard({
                           {setIndex + 1}
                         </span>
                         <span
-                          className={`text-sm font-medium ${set.isGreen ? 'text-emerald-400' : 'text-white'}`}
+                          className={`text-sm font-medium ${set.isGreen ? "text-emerald-400" : "text-white"}`}
                         >
                           {set.weight}
                         </span>
                       </div>
                       <span
-                        className={`text-sm ${set.isRed ? 'text-rose-400' : 'text-zinc-400'}`}
+                        className={`text-sm ${set.isRed ? "text-rose-400" : "text-zinc-400"}`}
                       >
                         {set.reps} reps
                       </span>
@@ -215,7 +189,7 @@ function ExerciseCard({
                       className="p-3 mt-3 border rounded-lg bg-zinc-800/20 border-zinc-700/30"
                     >
                       <p className="text-sm text-zinc-400">
-                        <span className="text-zinc-500">Note:</span>{' '}
+                        <span className="text-zinc-500">Note:</span>{" "}
                         {exercise.notes}
                       </p>
                     </motion.div>
@@ -227,14 +201,9 @@ function ExerciseCard({
         </div>
       </motion.button>
     </motion.div>
-  )
+  );
 }
-function StatCard({
-  icon,
-  value,
-  label,
-  delay,
-}) {
+function StatCard({ icon, value, label, delay }) {
   return (
     <motion.div
       initial={{
@@ -257,70 +226,15 @@ function StatCard({
       </div>
       <p className="text-xl font-bold text-white">{value}</p>
     </motion.div>
-  )
+  );
 }
-function MetadataChip({ icon, text }) {
-  return (
-    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800/60 rounded-lg text-sm">
-      <span className="text-zinc-500">{icon}</span>
-      <span className="text-zinc-300">{text}</span>
-    </div>
-  )
-}
-export function WorkoutScreen({exercises, onEdit }) {
-  const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0)
+
+export function WorkoutScreen({ exercises, onEdit }) {
+  const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
   return (
     <div className="w-full min-h-screen bg-zinc-950">
-      {/* App Header */}
-      <motion.header
-        initial={{
-          opacity: 0,
-          y: -20,
-        }}
-        animate={{
-          opacity: 1,
-          y: 0,
-        }}
-        transition={{
-          duration: 0.4,
-        }}
-        className="sticky top-0 z-50 border-b bg-zinc-950/80 backdrop-blur-xl border-zinc-800/50"
-      >
-        <div className="flex items-center justify-between px-4 py-3">
-          <button className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60">
-            <ChevronLeftIcon className="w-5 h-5" />
-          </button>
-          <div className="text-center">
-            <h1 className="text-lg font-semibold text-white">
-              Full Body Compound
-            </h1>
-            <p className="text-xs text-zinc-500">v2 • Jan 21, 2026</p>
-          </div>
-
-          <button className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60"
-          onClick={onEdit}>
-            <MoreVerticalIcon className="w-5 h-5" />
-          </button>
-          
-        </div>
-
-        {/* Metadata Chips */}
-        <div className="flex items-center gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
-          <MetadataChip
-            icon={<ClockIcon className="w-3.5 h-3.5" />}
-            text="7:30 PM"
-          />
-          <MetadataChip
-            icon={<MapPinIcon className="w-3.5 h-3.5" />}
-            text="MACU-M"
-          />
-          <MetadataChip
-            icon={<UserIcon className="w-3.5 h-3.5" />}
-            text="Jeppy"
-          />
-        </div>
-      </motion.header>
-
+      {/* TODO: IMPORT App Header HERE */}
+      <WorkoutHeader onEdit={() => onEdit()} />
       {/* Main Content */}
       <main className="px-4 py-6 pb-24">
         {/* Stats Row */}
@@ -419,7 +333,7 @@ export function WorkoutScreen({exercises, onEdit }) {
         }}
         transition={{
           delay: 0.8,
-          type: 'spring',
+          type: "spring",
           stiffness: 200,
         }}
         whileHover={{
@@ -433,6 +347,6 @@ export function WorkoutScreen({exercises, onEdit }) {
         <PlusIcon className="w-6 h-6" />
       </motion.button>
     </div>
-  )
+  );
 }
 export default WorkoutScreen;

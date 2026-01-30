@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import WorkoutScreen from './WorkoutScreen';
 import ExerciseSelector from './ExerciseSelector_v2';
 
-// Move static data here initially // is this needed here? I might just call it in ExerciseSelector_v2.jsx.
-import { ALL_EXERCISES } from './data/exercises'; 
+import { ALL_EXERCISES } from './data/exercises';  // Move static data here initially // is this needed here? I might just call it in ExerciseSelector_v2.jsx.
 
 // Define the initial state of exercises here
 const INITIAL_DATA = [
@@ -96,7 +95,7 @@ export default function App() {
       ) : (
         // SHOW WORKOUT SCREEN
         <WorkoutScreen 
-          exercises={currentExercises} 
+          exercises={currentExercises}
           onEdit={() => setIsEditing(true)} 
         />
       )}
