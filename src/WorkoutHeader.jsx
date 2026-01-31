@@ -7,6 +7,7 @@ import {
   UserIcon,
   CalendarIcon,
   ClockIcon,
+  FlameIcon
 } from "lucide-react";
 
 import {
@@ -32,6 +33,13 @@ const USER_OPTIONS = [
   { value: "JHoang", label: "JHoang" },
   { value: "Miss Tang", label: "Miss Tang" },
   { value: "Guest", label: "Guest" },
+];
+
+const TYPE_OPTIONS = [
+  {value: "Strength", label: "Strength"},
+  {value: "Cardio", label: "Cardio"},
+  {value: "Plyometrics", label: "Plyometrics"},
+  {value: "HIIT", label: "HIIT"}
 ];
 
 
@@ -74,6 +82,7 @@ export function WorkoutHeader({ onEdit }) {
 
     const [location, setLocation] = useState("MACU-M");
     const [user, setUser] = useState("JHoang");
+    const [type, setType] = useState("Strength");
 
 
   return (
@@ -135,6 +144,15 @@ export function WorkoutHeader({ onEdit }) {
            options={USER_OPTIONS}
            value={user}
            onChange={setUser}
+        />
+
+
+               <MetadataSelector 
+           icon={<FlameIcon className="w-3.5 h-3.5" />}
+           label="Activity"
+           options={TYPE_OPTIONS}
+           value={type}
+           onChange={setType}
         />
 
       </div>
