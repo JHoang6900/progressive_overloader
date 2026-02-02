@@ -44,13 +44,6 @@ const USER_OPTIONS = [
   { value: "Guest", label: "Guest" },
 ];
 
-const TYPE_OPTIONS = [
-  { value: "Strength", label: "Strength" },
-  { value: "Cardio", label: "Cardio" },
-  { value: "Plyometrics", label: "Plyometrics" },
-  { value: "HIIT", label: "HIIT" },
-];
-
 // --- SUB-COMPONENTS ---
 
 // 1. The Reusable Selector (Dropdown)
@@ -118,13 +111,14 @@ function WorkoutDatePicker({ date, setDate }) {
 }
 
 // --- MAIN COMPONENT ---
-export function WorkoutHeader({ onEdit }) {
-  const [location, setLocation] = useState("MACU-M");
-  const [user, setUser] = useState("JHoang");
-  const [type, setType] = useState("Strength");
-  
-  // Initialize with current date/time
-const [date, setDate] = useState(new Date()); 
+export function WorkoutHeader({ onEdit 
+  , location, setLocation
+  , user, setUser
+  , date, setDate
+}) {
+  // const [location, setLocation] = useState("MACU-M");
+  // const [user, setUser] = useState("JHoang");
+  // const [date, setDate] = useState(new Date()); 
 
   return (
     <motion.header
@@ -157,7 +151,7 @@ const [date, setDate] = useState(new Date());
       </div>
 
       {/* Bottom Row: Metadata Chips */}
-      <div className="flex items-center gap-2 px-4 pb-3 overflow-x-auto justify-left scrollbar-hide">
+      <div className="flex items-center justify-center gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
         
         {/* 1. The Date Picker */}
         <WorkoutDatePicker date={date} setDate={setDate} />

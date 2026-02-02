@@ -231,10 +231,24 @@ function StatCard({ icon, value, label, delay }) {
 
 export function WorkoutScreen({ exercises, onEdit }) {
   const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
+  const [location, setLocation] = useState("MACU-M");
+  const [user, setUser] = useState("JHoang");
+  const [date, setDate] = useState(new Date()); 
   return (
     <div className="w-full min-h-screen bg-zinc-950">
       {/* TODO: IMPORT App Header HERE */}
-      <WorkoutHeader onEdit={() => onEdit()} />
+      <WorkoutHeader 
+      onEdit={() => onEdit()}
+      location={location}
+      user={user}
+      date={date}
+
+      setLocation={setLocation}
+      setUser={setUser}
+      setDate={setDate}
+      
+      
+      />
       {/* Main Content */}
       <main className="px-4 py-6 pb-24">
         {/* Stats Row */}
