@@ -1,15 +1,25 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
+import { format } from "date-fns"; // Import formatting tool
+import { cn } from "@/lib/utils"; // Import class merger
 import {
   ChevronLeftIcon,
   MoreVerticalIcon,
   MapPinIcon,
   UserIcon,
-  CalendarIcon,
   ClockIcon,
-  FlameIcon
+  CalendarIcon, // Added Calendar Icon
+  DumbbellIcon, // Swapped UserIcon for Dumbbell for Activity
 } from "lucide-react";
 
+// Shadcn Components
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -20,13 +30,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-
-
+// --- CONSTANTS ---
 const LOCATION_OPTIONS = [
   { value: "MACU-M", label: "MACU-M" },
   { value: "MACU-T", label: "MACU-T" },
   { value: "EOS SJ", label: "EOS SJ" },
-  { value: "EOS TV", label: "EOS TV"}
+  { value: "EOS TV", label: "EOS TV" },
 ];
 
 const USER_OPTIONS = [
@@ -36,35 +45,29 @@ const USER_OPTIONS = [
 ];
 
 const TYPE_OPTIONS = [
-  {value: "Strength", label: "Strength"},
-  {value: "Cardio", label: "Cardio"},
-  {value: "Plyometrics", label: "Plyometrics"},
-  {value: "HIIT", label: "HIIT"}
+  { value: "Strength", label: "Strength" },
+  { value: "Cardio", label: "Cardio" },
+  { value: "Plyometrics", label: "Plyometrics" },
+  { value: "HIIT", label: "HIIT" },
 ];
 
+// --- SUB-COMPONENTS ---
 
-// A Reusable Component for ANY dropdown chip
+// 1. The Reusable Selector (Dropdown)
 function MetadataSelector({ icon, value, onChange, options, label }) {
   return (
     <div className="flex items-center gap-1.5 px-3 py-1 bg-zinc-800/60 rounded-lg text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
-    
       <span className="text-zinc-500 shrink-0">{icon}</span>
-
-      {/* The Select Component */}
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger className="w-auto h-8 gap-1 p-0 bg-transparent border-none shadow-none focus:ring-0 text-zinc-300">
-            {/* background transparent is nice for consistent theme */}
           <SelectValue placeholder={label} />
         </SelectTrigger>
-        
-        {/* The Dropdown Menu */}
-        <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-300">
+        <SelectContent className="bg-zinc-950/90 border-zinc-800 text-zinc-300">
           <SelectGroup>
             <SelectLabel className="text-zinc-500">{label}</SelectLabel>
-            {/* MAPPING LOGIC */}
             {options.map((option) => (
-              <SelectItem 
-                key={option.value} 
+              <SelectItem
+                key={option.value}
                 value={option.value}
                 className="cursor-pointer focus:bg-zinc-800 focus:text-white"
               >
@@ -78,37 +81,71 @@ function MetadataSelector({ icon, value, onChange, options, label }) {
   );
 }
 
+// 2. NEW: The Date Picker Component
+function WorkoutDatePicker({ date, setDate }) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          className={cn(
+            "flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800/60 rounded-lg text-sm text-zinc-300 hover:bg-zinc-800 transition-colors shrink-0",
+            !date && "text-muted-foreground"
+          )}
+        >
+          <CalendarIcon className="w-3.5 h-3.5 text-zinc-500" />
+          <span className="text-zinc-300">
+            {date ? format(date, "EEE, MMM d") : <span>Pick a date</span>}
+          </span>
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0 bg-zinc-950/90 border-zinc-800" align="start">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={setDate}
+          initialFocus
+          className="text-zinc-300"
+          // These styling props ensure the calendar looks 'Matte Black'
+          classNames={{
+            day_selected: "bg-zinc-100 text-zinc-900 hover:bg-zinc-100 hover:text-zinc-900 focus:bg-zinc-100 focus:text-zinc-900",
+            day_today: "bg-zinc-800 text-zinc-50",
+            day_outside: "text-zinc-500 opacity-50",
+          }}
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// --- MAIN COMPONENT ---
 export function WorkoutHeader({ onEdit }) {
-
-    const [location, setLocation] = useState("MACU-M");
-    const [user, setUser] = useState("JHoang");
-    const [type, setType] = useState("Strength");
-
+  const [location, setLocation] = useState("MACU-M");
+  const [user, setUser] = useState("JHoang");
+  const [type, setType] = useState("Strength");
+  
+  // Initialize with current date/time
+const [date, setDate] = useState(new Date()); 
 
   return (
     <motion.header
-      initial={{
-        opacity: 0,
-        y: -20,
-      }}
-      animate={{
-        opacity: 1,
-        y: 0,
-      }}
-      transition={{
-        duration: 0.4,
-      }}
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
       className="sticky top-0 z-50 border-b bg-zinc-950/80 backdrop-blur-xl border-zinc-800/50"
     >
+      {/* Top Row: Navigation & Actions */}
       <div className="flex items-center justify-between px-4 py-3">
-        <button className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60" label="Back Button">
+        <button className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60">
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
-        <div className="text-center" label="Workout Title and Date">
+        <div className="text-center">
           <h1 className="text-lg font-semibold text-white">
             Full Body Compound
           </h1>
-          <p className="text-xs text-zinc-500">v2 • Jan 21, 2026</p>
+          {/* Dynamic Subtitle based on the selected Date */}
+          <p className="text-xs text-zinc-500">
+             v2 • {format(date, "MMM d, yyyy")}
+          </p>
         </div>
 
         <button
@@ -119,42 +156,29 @@ export function WorkoutHeader({ onEdit }) {
         </button>
       </div>
 
-      {/* Metadata Chips Row */}
-      <div className="flex items-center gap-2 px-4 pb-3 overflow-x-auto scrollbar-hide">
+      {/* Bottom Row: Metadata Chips */}
+      <div className="flex items-center gap-2 px-4 pb-3 overflow-x-auto justify-left scrollbar-hide">
         
-        {/* TODO: Static Time Chip  */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800/60 rounded-lg text-sm text-zinc-300 shrink-0">
-           <ClockIcon className="w-3.5 h-3.5 text-zinc-500" />
-           <span>7:30 PM</span>
-        </div>
+        {/* 1. The Date Picker */}
+        <WorkoutDatePicker date={date} setDate={setDate} />
 
-   
-        <MetadataSelector 
-           icon={<MapPinIcon className="w-3.5 h-3.5" />}
-           label="Location"
-           options={LOCATION_OPTIONS}
-           value={location}
-           onChange={setLocation}
+        {/* 2. Location */}
+        <MetadataSelector
+          icon={<MapPinIcon className="w-3.5 h-3.5" />}
+          label="Location"
+          options={LOCATION_OPTIONS}
+          value={location}
+          onChange={setLocation}
         />
 
- 
-        <MetadataSelector 
-           icon={<UserIcon className="w-3.5 h-3.5" />}
-           label="User"
-           options={USER_OPTIONS}
-           value={user}
-           onChange={setUser}
+        {/* 3. User */}
+        <MetadataSelector
+          icon={<UserIcon className="w-3.5 h-3.5" />}
+          label="User"
+          options={USER_OPTIONS}
+          value={user}
+          onChange={setUser}
         />
-
-
-               <MetadataSelector 
-           icon={<FlameIcon className="w-3.5 h-3.5" />}
-           label="Activity"
-           options={TYPE_OPTIONS}
-           value={type}
-           onChange={setType}
-        />
-
       </div>
     </motion.header>
   );
