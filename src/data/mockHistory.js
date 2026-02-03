@@ -7,7 +7,7 @@ export const EXERCISE_HISTORY = {
       notes: "Felt heavy",
       sets: [
         { weight: "135lbs", reps: "5" }, // Set 1
-        { weight: "135lbs", reps: "5" }, // Set 2
+        { weight: "155lbs", reps: "5", isPR: true }, // Set 2
         { weight: "135lbs", reps: "5" }, // Set 3
         { weight: "135lbs", reps: "4" }, // Set 4
         { weight: "135lbs", reps: "4" }, // Set 5
@@ -20,8 +20,8 @@ export const EXERCISE_HISTORY = {
       date: "01/20/26",
       notes: "Good pump",
       sets: [
-        { weight: "35lbs", reps: "10" },
-        { weight: "35lbs", reps: "10" },
+        { weight: "35lbs", reps: "10", isPR: true },
+        { weight: "45lbs", reps: "10" },
       ]
     }
   },

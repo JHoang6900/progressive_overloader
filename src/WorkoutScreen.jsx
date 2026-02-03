@@ -159,9 +159,19 @@ function ExerciseCard({ exercise, index, ghost }) {
                             <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
                               Set {setIndex + 1}
                             </span>
+
+                             {/* TODO: REFACTOR TO KEEP CODE DRY INSTEAD OF WRITING 2 SPANS */}
+                            {ghostSet.isPR ?  <span className="flex items-center text-[10px] text-emerald-400/80 font-mono">
+                                Prev: {ghostSet.weight} x {ghostSet.reps} 🏆
+                                </span> 
+                                
+                                :
+                                
                             <span className="text-[10px] text-emerald-400/80 font-mono">
                               Prev: {ghostSet.weight} x {ghostSet.reps}
                             </span>
+                            }
+
                           </div>
                         )}
                         {/* ----------------------------- */}
