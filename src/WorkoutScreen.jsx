@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import WorkoutHeader from "./WorkoutHeader.jsx";
+import { EXERCISE_HISTORY } from "./data/mockHistory.js";
 
 // switch function for exercise icons
 function ExerciseIcon({ type }) {
@@ -27,7 +28,7 @@ function ExerciseIcon({ type }) {
   }
 }
 
-function ExerciseCard({ exercise, index }) {
+function ExerciseCard({ exercise, index, ghost }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const completedSets = exercise.sets.length; // For demo purposes, assuming all sets are completed
   const totalSets = exercise.sets.length;
@@ -141,39 +142,56 @@ function ExerciseCard({ exercise, index }) {
                 className="overflow-hidden"
               >
                 <div className="pt-4 mt-4 space-y-2 border-t border-zinc-800/50">
-                  {exercise.sets.map((set, setIndex) => (
-                    <motion.div
-                      key={setIndex}
-                      initial={{
-                        opacity: 0,
-                        x: -10,
-                      }}
-                      animate={{
-                        opacity: 1,
-                        x: 0,
-                      }}
-                      transition={{
-                        delay: setIndex * 0.05,
-                      }}
-                      className="flex items-center justify-between px-3 py-2 rounded-lg bg-zinc-800/30"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="flex items-center justify-center w-6 h-6 text-xs font-medium rounded-full bg-zinc-700/50 text-zinc-400">
-                          {setIndex + 1}
-                        </span>
-                        <span
-                          className={`text-sm font-medium ${set.isGreen ? "text-emerald-400" : "text-white"}`}
-                        >
-                          {set.weight}
-                        </span>
-                      </div>
-                      <span
-                        className={`text-sm ${set.isRed ? "text-rose-400" : "text-zinc-400"}`}
+                  {exercise.sets.map((set, setIndex) => {
+                    // 1. FIND THE MATCHING GHOST SET
+                    // We use optional chaining (?.) just in case the history has fewer sets
+                    const ghostSet = ghost?.sets?.[setIndex];
+
+                    return (
+                      <motion.div
+                        key={setIndex}
+                        // ... keep your existing animation props ...
+                        className="flex flex-col gap-1 px-3 py-2 mb-2 rounded-lg bg-zinc-800/30"
                       >
-                        {set.reps} reps
-                      </span>
-                    </motion.div>
-                  ))}
+                        {/* --- NEW: GHOST HEADER ROW --- */}
+                        {ghostSet && (
+                          <div className="flex items-end justify-between px-1 mb-1">
+                            <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
+                              Set {setIndex + 1}
+                            </span>
+                            <span className="text-[10px] text-emerald-400/80 font-mono">
+                              Prev: {ghostSet.weight} x {ghostSet.reps}
+                            </span>
+                          </div>
+                        )}
+                        {/* ----------------------------- */}
+
+                        {/* EXISTING INPUT ROW */}
+                        <div className="flex items-center justify-between">
+                          {/* If no ghost exists, show the set number here like before */}
+                          {!ghostSet && (
+                            <div className="flex items-center justify-center w-6 h-6 mr-3 text-xs font-medium rounded-full bg-zinc-700/50 text-zinc-400">
+                              {setIndex + 1}
+                            </div>
+                          )}
+
+                          {/* Your Existing Set Data (Weight/Reps) */}
+                          <div className="flex items-center flex-1 gap-3">
+                            <span
+                              className={`text-sm font-medium ${set.isGreen ? "text-emerald-400" : "text-white"}`}
+                            >
+                              {set.weight}
+                            </span>
+                          </div>
+                          <span
+                            className={`text-sm ${set.isRed ? "text-rose-400" : "text-zinc-400"}`}
+                          >
+                            {set.reps} reps
+                          </span>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
 
                   {exercise.notes && (
                     <motion.div
@@ -233,21 +251,30 @@ export function WorkoutScreen({ exercises, onEdit }) {
   const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
   const [location, setLocation] = useState("MACU-M");
   const [user, setUser] = useState("JHoang");
-  const [date, setDate] = useState(new Date()); 
+  const [date, setDate] = useState(new Date());
+
+  const getGhostData = (exerciseId) => {
+    const locationHistory = EXERCISE_HISTORY[location];
+    console.log("Location History ~>", locationHistory);
+    if (!locationHistory) return null;
+
+    // returns the whole object (sets, notes, date, etc.)
+    console.log("locationHistory[exerciseId] ~>", locationHistory[exerciseId]);
+    return locationHistory[exerciseId] || null;
+    
+  };
+
   return (
     <div className="w-full min-h-screen bg-zinc-950">
       {/* TODO: IMPORT App Header HERE */}
-      <WorkoutHeader 
-      onEdit={() => onEdit()}
-      location={location}
-      user={user}
-      date={date}
-
-      setLocation={setLocation}
-      setUser={setUser}
-      setDate={setDate}
-      
-      
+      <WorkoutHeader
+        onEdit={() => onEdit()}
+        location={location}
+        user={user}
+        date={date}
+        setLocation={setLocation}
+        setUser={setUser}
+        setDate={setDate}
       />
       {/* Main Content */}
       <main className="px-4 py-6 pb-24">
@@ -296,12 +323,24 @@ export function WorkoutScreen({ exercises, onEdit }) {
 
         {/* Exercise Cards */}
         <div>
-          {exercises.map((exercise, index) => (
-            <ExerciseCard key={exercise.id} exercise={exercise} index={index} />
-          ))}
+          {exercises.map((exercise, index) => {
+            // 1. CALL THE FUNCTION
+            // calculate the specific history for this exercise ID
+            const ghostData = getGhostData(exercise.id);
+
+            return (
+              <ExerciseCard
+                key={exercise.id}
+                exercise={exercise}
+                index={index}
+                // 2. PASS THE DATA DOWN
+                ghost={ghostData}
+              />
+            );
+          })}
         </div>
 
-        {/* Comments Section */}
+        {/* (INACTIVE) Comments Section */}
         <motion.div
           initial={{
             opacity: 0,
