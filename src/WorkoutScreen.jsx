@@ -28,6 +28,26 @@ function ExerciseIcon({ type }) {
   }
 }
 
+
+
+function WorkoutInput({ value, onChange, placeholder, align = "left" }) {
+  return (
+    <input
+      type="text" // Keep as text to allow "135+5" notations if you want
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className={`
+        w-full bg-transparent border-b border-transparent 
+        focus:border-emerald-500 focus:outline-none 
+        text-white font-medium text-lg p-0
+        placeholder:text-zinc-700
+        ${align === "right" ? "text-right" : "text-left"}
+      `}
+    />
+  );
+}
+
 function ExerciseCard({ exercise, index, ghost }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const completedSets = exercise.sets.length; // For demo purposes, assuming all sets are completed
@@ -141,7 +161,8 @@ function ExerciseCard({ exercise, index, ghost }) {
                 }}
                 className="overflow-hidden"
               >
-                <div className="pt-4 mt-4 space-y-2 border-t border-zinc-800/50">
+                <div className="pt-4 mt-4 space-y-2 border-t border-zinc-800/50"
+                onClick={(e) => e.stopPropagation()}>
                   {exercise.sets.map((set, setIndex) => {
                     // 1. FIND THE MATCHING GHOST SET
                     // We use optional chaining (?.) just in case the history has fewer sets
@@ -186,18 +207,28 @@ function ExerciseCard({ exercise, index, ghost }) {
                           )}
 
                           {/* Your Existing Set Data (Weight/Reps) */}
-                          <div className="flex items-center flex-1 gap-3">
-                            <span
-                              className={`text-sm font-medium ${set.isGreen ? "text-emerald-400" : "text-white"}`}
-                            >
-                              {set.weight}
-                            </span>
-                          </div>
-                          <span
-                            className={`text-sm ${set.isRed ? "text-rose-400" : "text-zinc-400"}`}
-                          >
-                            {set.reps} reps
-                          </span>
+<div className="flex items-center flex-1 gap-3 mr-4">
+    <WorkoutInput 
+      value={set.weight} 
+      // TODO: HANDLE WEIGHT CHANGE
+      onChange={(val) => console.log("New Weight:", val)} 
+      placeholder="0"
+    />
+    <span className="text-xs font-medium text-zinc-500">lbs</span>
+  </div>
+
+  {/* REPS INPUT */}
+  <div className="flex items-center w-20">
+    <WorkoutInput 
+      value={set.reps} 
+       // TODO: HANDLE REP CHANGE
+      onChange={(val) => console.log("New Reps:", val)} 
+      
+      placeholder="0"
+      align="right"
+    />
+    <span className="text-xs text-zinc-500 font-medium ml-1.5">reps</span>
+  </div>
                         </div>
                       </motion.div>
                     );
