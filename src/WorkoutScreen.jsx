@@ -48,9 +48,10 @@ function WorkoutInput({ value, onChange, placeholder, align = "left" }) {
   );
 }
 
-function ExerciseCard({ exercise, index, ghost }) {
+// ExerciseCard MUST receive 'ghost' and 'onSetChange' as props to use later..
+function ExerciseCard({ exercise, index, ghost, onSetChange }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const completedSets = exercise.sets.length; // For demo purposes, assuming all sets are completed
+  const completedSets = exercise.sets.length;
   const totalSets = exercise.sets.length;
   return (
     <motion.div
@@ -171,10 +172,10 @@ function ExerciseCard({ exercise, index, ghost }) {
                     return (
                       <motion.div
                         key={setIndex}
-                        // ... keep your existing animation props ...
+                        // ... keep existing animation props ...
                         className="flex flex-col gap-1 px-3 py-2 mb-2 rounded-lg bg-zinc-800/30"
                       >
-                        {/* --- NEW: GHOST HEADER ROW --- */}
+                        {/* --- GHOST HEADER ROW --- */}
                         {ghostSet && (
                           <div className="flex items-end justify-between px-1 mb-1">
                             <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
@@ -210,8 +211,8 @@ function ExerciseCard({ exercise, index, ghost }) {
 <div className="flex items-center flex-1 gap-3 mr-4">
     <WorkoutInput 
       value={set.weight} 
-      // TODO: HANDLE WEIGHT CHANGE
-      onChange={(val) => console.log("New Weight:", val)} 
+      //  WEIGHT CHANGE HANDLED BY OnSetChange PASSED FROM PARENT. 
+      onChange={(val) => onSetChange(exercise.id, setIndex, 'weight', val)} 
       placeholder="0"
     />
     <span className="text-xs font-medium text-zinc-500">lbs</span>
@@ -221,9 +222,8 @@ function ExerciseCard({ exercise, index, ghost }) {
   <div className="flex items-center w-20">
     <WorkoutInput 
       value={set.reps} 
-       // TODO: HANDLE REP CHANGE
-      onChange={(val) => console.log("New Reps:", val)} 
-      
+      //  REPS CHANGE HANDLED BY OnSetChange PASSED FROM PARENT. 
+       onChange={(val) => onSetChange(exercise.id, setIndex, 'reps', val)} 
       placeholder="0"
       align="right"
     />
@@ -288,7 +288,7 @@ function StatCard({ icon, value, label, delay }) {
   );
 }
 
-export function WorkoutScreen({ exercises, onEdit }) {
+export function WorkoutScreen({ exercises, onEdit, onUpdateExercises }) {
   const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
   const [location, setLocation] = useState("MACU-M");
   const [user, setUser] = useState("JHoang");
@@ -303,6 +303,26 @@ export function WorkoutScreen({ exercises, onEdit }) {
     console.log("locationHistory[exerciseId] ~>", locationHistory[exerciseId]);
     return locationHistory[exerciseId] || null;
     
+  };
+
+
+  const handleUpdateSet = (exerciseId, setIndex, field, newValue) => {
+    const updatedExercises = exercises.map((ex) => {
+      // Is this the exercise we are looking for?
+      if (ex.id === exerciseId) {
+        // Yes. Now find the specific set.
+        const updatedSets = ex.sets.map((set, i) => {
+          if (i === setIndex) {
+            // FOUND IT! Update 'weight' or 'reps'
+            return { ...set, [field]: newValue };
+          }
+          return set;
+        });
+        return { ...ex, sets: updatedSets };
+      }
+      return ex; // Not the one, keep it the same.
+    });
+    onUpdateExercises(updatedExercises);
   };
 
   return (
@@ -376,6 +396,7 @@ export function WorkoutScreen({ exercises, onEdit }) {
                 index={index}
                 // 2. PASS THE DATA DOWN
                 ghost={ghostData}
+                onSetChange={handleUpdateSet}
               />
             );
           })}

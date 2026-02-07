@@ -97,6 +97,9 @@ export default function App() {
         <WorkoutScreen 
           exercises={currentExercises}
           onEdit={() => setIsEditing(true)} 
+      
+      // 3. PASS THE SETTER DOWN
+      onUpdateExercises={setCurrentExercises}
         />
       )}
     </div>
