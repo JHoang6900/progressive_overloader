@@ -12,6 +12,7 @@ import {
   MessageCircleIcon,
   Trash2,
   Plus,
+  CircleCheckBig
 } from "lucide-react";
 
 import WorkoutHeader from "./WorkoutHeader.jsx";
@@ -182,6 +183,16 @@ function ExerciseCard({
                       <motion.div
                         key={setIndex}
                         // ... keep existing animation props ...
+                        // 1. THE GREEN TOGGLE (Layer A)
+                        // If clicked on the row background, toggle 'completed'
+                        onClick={() =>
+                          onSetChange(
+                            exercise.id,
+                            setIndex,
+                            "completed",
+                            !set.completed,
+                          )
+                        }
                         className="flex flex-col gap-1 px-3 py-2 mb-2 rounded-lg bg-zinc-800/30"
                       >
                         {/* --- GHOST HEADER ROW --- */}
@@ -215,7 +226,16 @@ function ExerciseCard({
                           )}
 
                           {/* Your Existing Set Data (Weight/Reps) */}
-                          <div className="flex items-center flex-1 gap-3 mr-4">
+                          <div
+                            className={`
+      flex flex-col gap-1 px-3 py-2 mb-2 rounded-lg border transition-colors cursor-pointer
+      ${
+        set.completed
+          ? "bg-emerald-900/20 border-emerald-500/30" // Green State
+          : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"
+      } // Default State`}
+                          >
+                            <div className="w-full" onClick={(e) => e.stopPropagation()}>
                             <WorkoutInput
                               value={set.weight}
                               //  WEIGHT CHANGE HANDLED BY OnSetChange PASSED FROM PARENT.
@@ -229,13 +249,14 @@ function ExerciseCard({
                               }
                               placeholder="0"
                             />
+                            </div>
                             <span className="text-xs font-medium text-zinc-500">
                               lbs
                             </span>
                           </div>
 
                           {/* REPS INPUT */}
-                          <div className="flex items-center w-20">
+                          <div className="flex items-center w-20" onClick={(e) => e.stopPropagation()}>
                             <WorkoutInput
                               value={set.reps}
                               //  REPS CHANGE HANDLED BY OnSetChange PASSED FROM PARENT.
@@ -252,7 +273,10 @@ function ExerciseCard({
 
                           {/* --- TRASH SET --- */}
                           <button
-                            onClick={() => onRemoveSet(exercise.id, setIndex)}
+           onClick={(e) => {
+            e.stopPropagation(); // Stop the row from toggling green
+            onRemoveSet(exercise.id, setIndex);
+          }}
                             className="ml-3 p-1.5 text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 rounded-md transition-colors"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -472,6 +496,38 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises }) {
           })}
         </div>
 
+
+ {/* FIXED BOTTOM BAR */}
+      <div className="bottom-0 left-0 right-0 p-4 border-t bg-zinc-950/80 backdrop-blur-md border-zinc-800">
+        <div className="flex items-center max-w-md gap-4 mx-auto">
+          
+          {/* 1. ADD EXERCISE BUTTON (Small, Grey) */}
+          <button 
+            // We'll wire this up later to open your selector
+            onClick={() => onEdit()} 
+            className="flex flex-col items-center justify-center w-16 transition-colors h-14 rounded-xl bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700"
+          >
+            <PlusIcon className="w-6 h-6" />
+            <span className="text-[10px] font-medium mt-0.5">Add</span>
+          </button>
+
+          {/* 2. FINISH WORKOUT BUTTON (Big, Green) */}
+          <button
+            onClick={() => console.log("Finish Workout Clicked!")}
+            className="flex-1 text-lg font-semibold tracking-wide transition-colors shadow-lg h-14 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl shadow-emerald-500/20"
+          >
+            <div className="flex items-center justify-center">
+              <CircleCheckBig className="w-8 h-8" />
+            </div>
+          </button>
+          
+        </div>
+      </div>
+
+      {/* Delete your old 'Floating Action Button' motion.button code blocks 
+          since we replaced it with the 'Add' button in the bar above! */}
+
+
         {/* (INACTIVE) Comments Section */}
         <motion.div
           initial={{
@@ -507,7 +563,7 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises }) {
       </main>
 
       {/* Floating Action Button */}
-      <motion.button
+      {/* <motion.button
         initial={{
           opacity: 0,
           scale: 0,
@@ -530,7 +586,7 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises }) {
         className="fixed flex items-center justify-center bg-white shadow-lg bottom-6 right-6 w-14 h-14 rounded-2xl text-zinc-900 shadow-black/30"
       >
         <PlusIcon className="w-6 h-6" />
-      </motion.button>
+      </motion.button> */}
     </div>
   );
 }
