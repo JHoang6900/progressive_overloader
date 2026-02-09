@@ -10,6 +10,8 @@ import {
   TargetIcon,
   FlameIcon,
   MessageCircleIcon,
+  Trash2,
+  Plus,
 } from "lucide-react";
 
 import WorkoutHeader from "./WorkoutHeader.jsx";
@@ -27,8 +29,6 @@ function ExerciseIcon({ type }) {
       return <FlameIcon className={iconClass} />;
   }
 }
-
-
 
 function WorkoutInput({ value, onChange, placeholder, align = "left" }) {
   return (
@@ -49,7 +49,14 @@ function WorkoutInput({ value, onChange, placeholder, align = "left" }) {
 }
 
 // ExerciseCard MUST receive 'ghost' and 'onSetChange' as props to use later..
-function ExerciseCard({ exercise, index, ghost, onSetChange }) {
+function ExerciseCard({
+  exercise,
+  index,
+  ghost,
+  onSetChange,
+  onAddSet,
+  onRemoveSet,
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const completedSets = exercise.sets.length;
   const totalSets = exercise.sets.length;
@@ -162,8 +169,10 @@ function ExerciseCard({ exercise, index, ghost, onSetChange }) {
                 }}
                 className="overflow-hidden"
               >
-                <div className="pt-4 mt-4 space-y-2 border-t border-zinc-800/50"
-                onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="pt-4 mt-4 space-y-2 border-t border-zinc-800/50"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   {exercise.sets.map((set, setIndex) => {
                     // 1. FIND THE MATCHING GHOST SET
                     // We use optional chaining (?.) just in case the history has fewer sets
@@ -182,18 +191,16 @@ function ExerciseCard({ exercise, index, ghost, onSetChange }) {
                               Set {setIndex + 1}
                             </span>
 
-                             {/* TODO: REFACTOR TO KEEP CODE DRY INSTEAD OF WRITING 2 SPANS */}
-                            {ghostSet.isPR ?  <span className="flex items-center text-[10px] text-emerald-400/80 font-mono">
+                            {/* TODO: REFACTOR TO KEEP CODE DRY INSTEAD OF WRITING 2 SPANS */}
+                            {ghostSet.isPR ? (
+                              <span className="flex items-center text-[10px] text-emerald-400/80 font-mono">
                                 Prev: {ghostSet.weight} x {ghostSet.reps} 🏆
-                                </span> 
-                                
-                                :
-                                
-                            <span className="text-[10px] text-emerald-400/80 font-mono">
-                              Prev: {ghostSet.weight} x {ghostSet.reps}
-                            </span>
-                            }
-
+                              </span>
+                            ) : (
+                              <span className="text-[10px] text-emerald-400/80 font-mono">
+                                Prev: {ghostSet.weight} x {ghostSet.reps}
+                              </span>
+                            )}
                           </div>
                         )}
                         {/* ----------------------------- */}
@@ -208,31 +215,62 @@ function ExerciseCard({ exercise, index, ghost, onSetChange }) {
                           )}
 
                           {/* Your Existing Set Data (Weight/Reps) */}
-<div className="flex items-center flex-1 gap-3 mr-4">
-    <WorkoutInput 
-      value={set.weight} 
-      //  WEIGHT CHANGE HANDLED BY OnSetChange PASSED FROM PARENT. 
-      onChange={(val) => onSetChange(exercise.id, setIndex, 'weight', val)} 
-      placeholder="0"
-    />
-    <span className="text-xs font-medium text-zinc-500">lbs</span>
-  </div>
+                          <div className="flex items-center flex-1 gap-3 mr-4">
+                            <WorkoutInput
+                              value={set.weight}
+                              //  WEIGHT CHANGE HANDLED BY OnSetChange PASSED FROM PARENT.
+                              onChange={(val) =>
+                                onSetChange(
+                                  exercise.id,
+                                  setIndex,
+                                  "weight",
+                                  val,
+                                )
+                              }
+                              placeholder="0"
+                            />
+                            <span className="text-xs font-medium text-zinc-500">
+                              lbs
+                            </span>
+                          </div>
 
-  {/* REPS INPUT */}
-  <div className="flex items-center w-20">
-    <WorkoutInput 
-      value={set.reps} 
-      //  REPS CHANGE HANDLED BY OnSetChange PASSED FROM PARENT. 
-       onChange={(val) => onSetChange(exercise.id, setIndex, 'reps', val)} 
-      placeholder="0"
-      align="right"
-    />
-    <span className="text-xs text-zinc-500 font-medium ml-1.5">reps</span>
-  </div>
+                          {/* REPS INPUT */}
+                          <div className="flex items-center w-20">
+                            <WorkoutInput
+                              value={set.reps}
+                              //  REPS CHANGE HANDLED BY OnSetChange PASSED FROM PARENT.
+                              onChange={(val) =>
+                                onSetChange(exercise.id, setIndex, "reps", val)
+                              }
+                              placeholder="0"
+                              align="right"
+                            />
+                            <span className="text-xs text-zinc-500 font-medium ml-1.5">
+                              reps
+                            </span>
+                          </div>
+
+                          {/* --- TRASH SET --- */}
+                          <button
+                            onClick={() => onRemoveSet(exercise.id, setIndex)}
+                            className="ml-3 p-1.5 text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 rounded-md transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                          {/* -------------------------- */}
                         </div>
                       </motion.div>
                     );
                   })}
+
+                  {/* --- ADD SET --- */}
+                  <button
+                    onClick={() => onAddSet(exercise.id)}
+                    className="flex items-center justify-center w-full gap-2 py-3 mt-2 text-sm font-medium transition-colors border border-dashed rounded-lg text-zinc-500 border-zinc-700/50 hover:bg-zinc-800/30 hover:text-zinc-300 hover:border-zinc-600"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Set</span>
+                  </button>
 
                   {exercise.notes && (
                     <motion.div
@@ -302,9 +340,7 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises }) {
     // returns the whole object (sets, notes, date, etc.)
     console.log("locationHistory[exerciseId] ~>", locationHistory[exerciseId]);
     return locationHistory[exerciseId] || null;
-    
   };
-
 
   const handleUpdateSet = (exerciseId, setIndex, field, newValue) => {
     const updatedExercises = exercises.map((ex) => {
@@ -313,7 +349,7 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises }) {
         // Yes. Now find the specific set.
         const updatedSets = ex.sets.map((set, i) => {
           if (i === setIndex) {
-            // FOUND IT! Update 'weight' or 'reps'
+            // located, now Update 'weight' or 'reps' based on 'field' parameter
             return { ...set, [field]: newValue };
           }
           return set;
@@ -325,9 +361,41 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises }) {
     onUpdateExercises(updatedExercises);
   };
 
+  // 1. ADD SET LOGIC
+  const handleAddSet = (exerciseId) => {
+    const updatedExercises = exercises.map((ex) => {
+      if (ex.id === exerciseId) {
+        // Create a new empty set
+        const previousSet = ex.sets[ex.sets.length - 1];
+        const newSet = {
+          weight: previousSet ? previousSet.weight : "", // Copy weight or empty to save typing
+          reps: previousSet ? previousSet.reps : "", // Copy reps or empty
+          completed: false,
+        };
+
+        return { ...ex, sets: [...ex.sets, newSet] }; // Add to end
+      }
+      return ex;
+    });
+    onUpdateExercises(updatedExercises);
+  };
+
+  // 2. REMOVE SET LOGIC
+  const handleRemoveSet = (exerciseId, setIndex) => {
+    const updatedExercises = exercises.map((ex) => {
+      if (ex.id === exerciseId) {
+        // Filter out the set at specific index. For the most part, try using filter instead of splice/creating new arrays in React.
+        const updatedSets = ex.sets.filter((_, i) => i !== setIndex);
+        return { ...ex, sets: updatedSets };
+      }
+      return ex;
+    });
+    onUpdateExercises(updatedExercises);
+  };
+
   return (
     <div className="w-full min-h-screen bg-zinc-950">
-      {/* TODO: IMPORT App Header HERE */}
+      
       <WorkoutHeader
         onEdit={() => onEdit()}
         location={location}
@@ -397,6 +465,8 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises }) {
                 // 2. PASS THE DATA DOWN
                 ghost={ghostData}
                 onSetChange={handleUpdateSet}
+                onAddSet={handleAddSet}
+                onRemoveSet={handleRemoveSet}
               />
             );
           })}
