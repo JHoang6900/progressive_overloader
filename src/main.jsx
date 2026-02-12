@@ -6,6 +6,8 @@ import ExerciseSelector from './ExerciseSelector_v2.jsx'
 
 import WorkoutHeader from './WorkoutHeader.jsx'
 
+import SummaryScreen from './SummaryScreen.jsx'
+
 import App from './App.jsx'
 
 import './index.css'
@@ -13,8 +15,10 @@ import './index.css'
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <App />
+
     {/* <WorkoutScreen /> */}
     {/* <ExerciseSelector /> */}
     {/* <WorkoutHeader /> */}
+
   </React.StrictMode>,
 )

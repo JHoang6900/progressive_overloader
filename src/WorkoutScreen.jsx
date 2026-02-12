@@ -350,7 +350,7 @@ function StatCard({ icon, value, label, delay }) {
   );
 }
 
-export function WorkoutScreen({ exercises, onEdit, onUpdateExercises }) {
+export function WorkoutScreen({ exercises, onEdit, onUpdateExercises, onFinish }) {
   const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
   const [location, setLocation] = useState("MACU-M");
   const [user, setUser] = useState("JHoang");
@@ -513,7 +513,11 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises }) {
 
           {/* 2. FINISH WORKOUT BUTTON (Big, Green) */}
           <button
-            onClick={() => console.log("Finish Workout Clicked!")}
+            onClick={function() {
+              onFinish();
+              console.log("Finish Workout Clicked!");
+            }}
+            
             className="flex-1 text-lg font-semibold tracking-wide transition-colors shadow-lg h-14 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl shadow-emerald-500/20"
           >
             <div className="flex items-center justify-center">

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import WorkoutScreen from './WorkoutScreen';
 import ExerciseSelector from './ExerciseSelector_v2';
+import SummaryScreen from './SummaryScreen';
 
-import { ALL_EXERCISES } from './data/exercises';  // Move static data here initially // is this needed here? I might just call it in ExerciseSelector_v2.jsx.
+import { ALL_EXERCISES } from './data/exercises'; 
 
 // Define the initial state of exercises here
 const INITIAL_DATA = [
@@ -74,8 +75,9 @@ export default function App() {
   // 1. The "Single Source of Truth" for data
   const [currentExercises, setCurrentExercises] = useState(INITIAL_DATA);
   
-  // 2. The state that controls which screen is visible
+  // 2. View States
   const [isEditing, setIsEditing] = useState(false);
+  const [isFinished, setIsFinished] = useState(false); 
 
   // Function to handle saving changes from ExerciseSelector
   const handleSave = (updatedExercises) => {
@@ -85,21 +87,33 @@ export default function App() {
 
   return (
     <div>
-      {isEditing ? (
-        // SHOW EDIT SCREEN
+      {/* THE LOGIC CHAIN 
+         Structure: Condition ? (True) : Condition2 ? (True) : (False/Default)
+      */}
+
+      {isFinished ? (
+        // 1. SHOW SUMMARY SCREEN
+        <SummaryScreen 
+           exercises={currentExercises} 
+           onClose={() => {
+              setIsFinished(false);
+              // Optional: Reset workout logic would go here
+           }} 
+        />
+      ) : isEditing ? (
+        // 2. SHOW EDIT SCREEN
         <ExerciseSelector 
           exercises={currentExercises} 
           onSave={handleSave}
           onCancel={() => setIsEditing(false)} 
         />
       ) : (
-        // SHOW WORKOUT SCREEN
+        // 3. SHOW WORKOUT SCREEN (Default)
         <WorkoutScreen 
           exercises={currentExercises}
           onEdit={() => setIsEditing(true)} 
-      
-      // 3. PASS THE SETTER DOWN
-      onUpdateExercises={setCurrentExercises}
+          onUpdateExercises={setCurrentExercises}
+          onFinish={() => setIsFinished(true)} // <--- Connects the button
         />
       )}
     </div>
