@@ -43,7 +43,8 @@ function WorkoutInput({ value, onChange, placeholder, align = "left" }) {
         focus:border-emerald-500 focus:outline-none 
         text-white font-medium text-lg p-0
         placeholder:text-zinc-700
-        ${align === "right" ? "text-right" : "text-left"}
+        ${align === "right" ? "text-right" : align === "center" ? "text-center" : "text-left"}
+
       `}
     />
   );
@@ -251,15 +252,26 @@ function ExerciseCard({
     </span>
   </div>
 
-  {/* 3. THE REPS INPUT */}
-  <div className="flex items-center w-20 shrink-0" onClick={(e) => e.stopPropagation()}>
-    <WorkoutInput
-      value={set.reps}
-      onChange={(val) => onSetChange(exercise.id, setIndex, "reps", val)}
-      placeholder="0"
-      align="right"
-    />
-    <span className={`text-xs font-medium ml-1.5 ${set.completed ? 'text-emerald-500' : 'text-zinc-500'}`}>
+{/* 3. THE REPS INPUT */}
+  <div className="flex items-center w-20 gap-2 shrink-0">
+    {/* The colored box specifically for the input */}
+    <div
+      className={`flex-1 px-2 py-2 rounded-lg border transition-colors ${
+        set.completed
+          ? "bg-emerald-800/40 border-emerald-500/30"
+          : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"
+      }`}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <WorkoutInput
+        value={set.reps}
+        onChange={(val) => onSetChange(exercise.id, setIndex, "reps", val)}
+        placeholder="0"
+        align="center"
+      />
+    </div>
+    {/* The label sitting outside the box */}
+    <span className={`text-xs font-medium shrink-0 ${set.completed ? 'text-emerald-500' : 'text-zinc-500'}`}>
       reps
     </span>
   </div>
