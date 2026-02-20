@@ -31,7 +31,7 @@ export default function SummaryScreen({ exercises, onClose }) {
     return acc + exerciseVolume;
   }, 0);
 
-  const workoutsCompleted = exercises.filter(ex => ex.sets.some(s => s.completed)).length;
+  const exercisesCompleted = exercises.filter(ex => ex.sets.some(s => s.completed)).length;
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 text-white bg-zinc-950">
@@ -134,7 +134,7 @@ export default function SummaryScreen({ exercises, onClose }) {
   {/* Notification Dot (Also Glowing) */}
   <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-blue-500 rounded-full border-2 border-zinc-900 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
 </div>
-                <div className="font-mono text-2xl font-bold text-white">{workoutsCompleted}</div>
+                <div className="font-mono text-2xl font-bold text-white">{exercisesCompleted}</div>
                 <div className="text-[10px] text-zinc-500 uppercase tracking-widest font-bold">Exercises</div>
             </motion.div>
         </div>

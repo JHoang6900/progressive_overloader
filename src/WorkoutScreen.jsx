@@ -217,72 +217,65 @@ function ExerciseCard({
                         {/* ----------------------------- */}
 
                         {/* EXISTING INPUT ROW */}
-                        <div className="flex items-center justify-between">
-                          {/* If no ghost exists, show the set number here like before */}
-                          {!ghostSet && (
-                            <div className="flex items-center justify-center w-6 h-6 mr-3 text-xs font-medium rounded-full bg-zinc-700/50 text-zinc-400">
-                              {setIndex + 1}
-                            </div>
-                          )}
+                  {/* EXISTING INPUT ROW */}
+<div className="flex items-center justify-between h-8">
+  
+  {/* 1. THE SET NUMBER / CHECKMARK */}
+  {/* Removed the !ghostSet wrapper so the width is ALWAYS consistent */}
+  <div 
+    className={`flex items-center justify-center w-6 h-6 shrink-0 mr-3 text-xs font-medium rounded-full ${
+      set.completed ? "bg-emerald-500 text-zinc-900" : "bg-zinc-700/50 text-zinc-400"
+    }`}
+  >
+    {set.completed ? <CircleCheckBig className="w-3.5 h-3.5" /> : setIndex + 1}
+  </div>
 
-                          {/* Your Existing Set Data (Weight/Reps) */}
-                          <div
-                            className={`
-      flex flex-col gap-1 px-3 py-2 mb-2 rounded-lg border transition-colors cursor-pointer
-      ${
-        set.completed
-          ? "bg-emerald-900/20 border-emerald-500/30" // Green State
-          : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"
-      } // Default State`}
-                          >
-                            <div className="w-full" onClick={(e) => e.stopPropagation()}>
-                            <WorkoutInput
-                              value={set.weight}
-                              //  WEIGHT CHANGE HANDLED BY OnSetChange PASSED FROM PARENT.
-                              onChange={(val) =>
-                                onSetChange(
-                                  exercise.id,
-                                  setIndex,
-                                  "weight",
-                                  val,
-                                )
-                              }
-                              placeholder="0"
-                            />
-                            </div>
-                            <span className="text-xs font-medium text-zinc-500">
-                              lbs
-                            </span>
-                          </div>
+  {/* 2. THE WEIGHT INPUT */}
+  <div className="flex items-center flex-1 gap-3 px-3 py-2 mr-4">
+   <div
+  className={` px-3 py-2 rounded-lg border transition-colors ${
+    set.completed 
+      ? "bg-emerald-800/40 border-emerald-500/30" 
+      : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"
+  }`}
+  onClick={(event) => event.stopPropagation()}
+>
+      <WorkoutInput
+        value={set.weight}
+        onChange={(value) => onSetChange(exercise.id, setIndex, "weight", value)}
+        placeholder="0"
+      />
+    </div>
+    <span className={`text-xs font-medium ${set.completed ? 'text-emerald-500' : 'text-zinc-500'}`}>
+      lbs
+    </span>
+  </div>
 
-                          {/* REPS INPUT */}
-                          <div className="flex items-center w-20" onClick={(e) => e.stopPropagation()}>
-                            <WorkoutInput
-                              value={set.reps}
-                              //  REPS CHANGE HANDLED BY OnSetChange PASSED FROM PARENT.
-                              onChange={(val) =>
-                                onSetChange(exercise.id, setIndex, "reps", val)
-                              }
-                              placeholder="0"
-                              align="right"
-                            />
-                            <span className="text-xs text-zinc-500 font-medium ml-1.5">
-                              reps
-                            </span>
-                          </div>
+  {/* 3. THE REPS INPUT */}
+  <div className="flex items-center w-20 shrink-0" onClick={(e) => e.stopPropagation()}>
+    <WorkoutInput
+      value={set.reps}
+      onChange={(val) => onSetChange(exercise.id, setIndex, "reps", val)}
+      placeholder="0"
+      align="right"
+    />
+    <span className={`text-xs font-medium ml-1.5 ${set.completed ? 'text-emerald-500' : 'text-zinc-500'}`}>
+      reps
+    </span>
+  </div>
 
-                          {/* --- TRASH SET --- */}
-                          <button
-           onClick={(e) => {
-            e.stopPropagation(); // Stop the row from toggling green
-            onRemoveSet(exercise.id, setIndex);
-          }}
-                            className="ml-3 p-1.5 text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 rounded-md transition-colors"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                          {/* -------------------------- */}
-                        </div>
+  {/* 4. THE TRASH BUTTON */}
+  <button
+    onClick={(e) => {
+      e.stopPropagation(); 
+      onRemoveSet(exercise.id, setIndex);
+    }}
+    className="ml-3 p-1.5 shrink-0 text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 rounded-md transition-colors"
+  >
+    <Trash2 className="w-3.5 h-3.5" />
+  </button>
+  
+</div>
                       </motion.div>
                     );
                   })}
