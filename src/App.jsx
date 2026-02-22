@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import WorkoutScreen from './WorkoutScreen';
 import ExerciseSelector from './ExerciseSelector_v2';
 import SummaryScreen from './SummaryScreen';
 
 import { ALL_EXERCISES } from './data/exercises'; 
+
+// Adjust the path if your supabaseClient.js is in a different folder
+import { supabase } from './supabaseClient'; 
 
 // Define the initial state of exercises here
 const INITIAL_DATA = [
@@ -84,6 +87,23 @@ export default function App() {
     setCurrentExercises(updatedExercises); // Update the master list
     setIsEditing(false); // Go back to workout screen
   };
+
+
+
+  useEffect(() => {
+    const testConnection = async () => {
+      // We ask Supabase for the current user session
+      const { data, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error("❌ Supabase Connection Failed:", error.message);
+      } else {
+        console.log("✅ Supabase is connected! Data:", data);
+      }
+    };
+
+    testConnection();
+  }, []);
 
   return (
     <div>
