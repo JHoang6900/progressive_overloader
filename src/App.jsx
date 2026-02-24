@@ -5,8 +5,9 @@ import SummaryScreen from './SummaryScreen';
 
 import { ALL_EXERCISES } from './data/exercises'; 
 
-// Adjust the path if your supabaseClient.js is in a different folder
 import { supabase } from './supabaseClient'; 
+
+import { saveWorkoutToCloud } from './database/finishWorkout';
 
 // Define the initial state of exercises here
 const INITIAL_DATA = [
@@ -90,6 +91,7 @@ export default function App() {
 
 
 
+  // Test Supabase connection on app load
   useEffect(() => {
     const testConnection = async () => {
       // We ask Supabase for the current user session
@@ -104,6 +106,24 @@ export default function App() {
 
     testConnection();
   }, []);
+
+
+// Send the data to Supabase and then show the Summary Screen if successful
+const handleFinishWorkout = async () => {
+  console.log("Finish button clicked! Starting save...");
+  
+  // 1. Send the data to Supabase using the state App.jsx already has!
+  const isSaved = await saveWorkoutToCloud(workoutMetadata, currentExercises);
+  
+  // 2. ONLY show the Summary Screen if the database successfully saved it
+  if (isSaved) {
+    setIsFinished(true); 
+  } else {
+    // You can replace this with a nice toast notification later!
+    alert("Oops! There was an error saving your workout to the cloud.");
+  }
+};
+
 
   return (
     <div>
@@ -133,7 +153,7 @@ export default function App() {
           exercises={currentExercises}
           onEdit={() => setIsEditing(true)} 
           onUpdateExercises={setCurrentExercises}
-          onFinish={() => setIsFinished(true)} // <--- Connects the button
+          onFinish={handleFinishWorkout} // <--- Connects the button
         />
       )}
     </div>

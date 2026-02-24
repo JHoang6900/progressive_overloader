@@ -526,7 +526,8 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises, onFinish }
             className="flex-1 text-lg font-semibold tracking-wide transition-colors shadow-lg h-14 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl shadow-emerald-500/20"
           >
             <div className="flex items-center justify-center">
-              <CircleCheckBig className="w-8 h-8" />
+              <CircleCheckBig className="w-8 h-8" /> 
+              <span className="ml-2">Done</span>
             </div>
           </button>
           
