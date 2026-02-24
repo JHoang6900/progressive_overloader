@@ -109,8 +109,10 @@ export default function App() {
 
 
 // Send the data to Supabase and then show the Summary Screen if successful
-const handleFinishWorkout = async () => {
+const handleFinishWorkout = async (workoutMetadata) => {
   console.log("Finish button clicked! Starting save...");
+  console.log("Finish button clicked! Received metadata:", workoutMetadata);
+  console.log("Finish button clicked! Current exercises to save:", currentExercises);
   
   // 1. Send the data to Supabase using the state App.jsx already has!
   const isSaved = await saveWorkoutToCloud(workoutMetadata, currentExercises);

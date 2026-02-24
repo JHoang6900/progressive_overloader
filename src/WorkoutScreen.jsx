@@ -519,7 +519,18 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises, onFinish }
           {/* 2. FINISH WORKOUT BUTTON (Big, Green) */}
           <button
             onClick={function() {
-              onFinish();
+
+              // 1. Package the local state into our metadata object
+    const metadata = {
+      location: location,
+      userName: user, 
+      date: date
+    };
+
+    // // 2. Call the saveWorkoutToCloud function
+    // saveWorkoutToCloud(metadata, exercises);
+
+              onFinish(metadata);
               console.log("Finish Workout Clicked!");
             }}
             
