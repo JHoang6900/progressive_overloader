@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import WorkoutScreen from './WorkoutScreen';
-import ExerciseSelector from './ExerciseSelector_v2';
-import SummaryScreen from './SummaryScreen';
+import React, { useState, useEffect } from "react";
+import WorkoutScreen from "./WorkoutScreen";
+import ExerciseSelector from "./ExerciseSelector_v2";
+import SummaryScreen from "./SummaryScreen";
 
-import { ALL_EXERCISES } from './data/exercises'; 
+import { ALL_EXERCISES } from "./data/exercises";
 
-import { supabase } from './supabaseClient'; 
+import { supabase } from "./supabaseClient";
 
-import { saveWorkoutToCloud } from './database/finishWorkout';
+import { saveWorkoutToCloud } from "./database/finishWorkout";
 
 // Define the initial state of exercises here
 const INITIAL_DATA = [
@@ -17,24 +17,24 @@ const INITIAL_DATA = [
     icon: "dumbbell",
     targetReps: "8-10",
     sets: [
-      { weight: "45+15lbs", reps: "5" },
-      { weight: "45+15lbs", reps: "5" },
-      { weight: "45+15lbs", reps: "5" },
-      { weight: "45+15lbs", reps: "4" },
-      { weight: "45+15lbs", reps: "4" },
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
     ],
-    notes: "5x5 last 2 sets were 5x4",
+    notes: "Felt strong today! Could have pushed for 99 reps on the last set.",
   },
   {
     id: "2",
     name: "Pull-Ups",
     icon: "target",
     targetReps: "8-10",
-    sets: [
-      { weight: "Green", reps: "10", isGreen: true },
-      { weight: "Green", reps: "5 | 3", isGreen: true },
-      { weight: "Green", reps: "5 | 3", isGreen: true },
-      { weight: "Green", reps: "5 | 3", isGreen: true },
+        sets: [
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
     ],
   },
   {
@@ -42,11 +42,11 @@ const INITIAL_DATA = [
     name: "Incline Dumbbell Curl",
     icon: "dumbbell",
     targetReps: "8-10",
-    sets: [
-      { weight: "20lbs", reps: "10" },
-      { weight: "20lbs", reps: "5" },
-      { weight: "15lbs", reps: "10" },
-      { weight: "15lbs", reps: "10" },
+        sets: [
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
     ],
   },
   {
@@ -54,11 +54,11 @@ const INITIAL_DATA = [
     name: "Leg Extensions",
     icon: "flame",
     targetReps: "7-9",
-    sets: [
-      { weight: "85lbs", reps: "10", isRed: true },
-      { weight: "100lbs", reps: "10", isRed: true },
-      { weight: "100lbs", reps: "10", isRed: true },
-      { weight: "100lbs", reps: "10", isRed: true },
+        sets: [
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
     ],
   },
   {
@@ -67,10 +67,11 @@ const INITIAL_DATA = [
     icon: "dumbbell",
     targetReps: "8-10",
     sets: [
-      { weight: "75lbs", reps: "7" },
-      { weight: "75lbs", reps: "10" },
-      { weight: "75lbs", reps: "10" },
-      { weight: "75lbs", reps: "10" },
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
+      { weight: "", reps: "" },
     ],
   },
 ];
@@ -78,10 +79,10 @@ const INITIAL_DATA = [
 export default function App() {
   // 1. The "Single Source of Truth" for data
   const [currentExercises, setCurrentExercises] = useState(INITIAL_DATA);
-  
+
   // 2. View States
   const [isEditing, setIsEditing] = useState(false);
-  const [isFinished, setIsFinished] = useState(false); 
+  const [isFinished, setIsFinished] = useState(false);
 
   // Function to handle saving changes from ExerciseSelector
   const handleSave = (updatedExercises) => {
@@ -89,14 +90,12 @@ export default function App() {
     setIsEditing(false); // Go back to workout screen
   };
 
-
-
   // Test Supabase connection on app load
   useEffect(() => {
     const testConnection = async () => {
       // We ask Supabase for the current user session
       const { data, error } = await supabase.auth.getSession();
-      
+
       if (error) {
         console.error("❌ Supabase Connection Failed:", error.message);
       } else {
@@ -107,25 +106,48 @@ export default function App() {
     testConnection();
   }, []);
 
+  // Send the data to Supabase and then show the Summary Screen if successful
+  const handleFinishWorkout = async (workoutMetadata) => {
 
-// Send the data to Supabase and then show the Summary Screen if successful
-const handleFinishWorkout = async (workoutMetadata) => {
-  console.log("Finish button clicked! Starting save...");
-  console.log("Finish button clicked! Received metadata:", workoutMetadata);
-  console.log("Finish button clicked! Current exercises to save:", currentExercises);
-  
-  // 1. Send the data to Supabase using the state App.jsx already has!
-  const isSaved = await saveWorkoutToCloud(workoutMetadata, currentExercises);
-  
-  // 2. ONLY show the Summary Screen if the database successfully saved it
-  if (isSaved) {
-    setIsFinished(true); 
-  } else {
-    // You can replace this with a nice toast notification later!
-    alert("Oops! There was an error saving your workout to the cloud.");
+
+    {
+  // 1. THE VALIDATION GUARDRAIL: Make sure there's at least 1 exercise before allowing the user to finish.
+  if (!currentExercises || currentExercises.length === 0) {
+    // Stop the function immediately and warn the user
+    alert("You need to add at least one exercise before finishing your workout!");
+    return; 
   }
-};
+}
 
+  // 2. CHECK FOR ACTUAL DATA (No Ghost Rows!) CHECK FOR EMPTY SETS: Make sure at least one exercise has a set with weight or reps filled in.
+  const hasValidSets = currentExercises.some(ex => {
+    return ex.sets && ex.sets.some(set => set.weight || set.reps);
+  });
+
+  if (!hasValidSets) {
+    alert("You have exercises, but no sets logged! Add some weights or reps to finish.");
+    return;
+  }
+
+
+    console.log("Finish button clicked! Starting save...");
+    console.log("Finish button clicked! Received metadata:", workoutMetadata);
+    console.log(
+      "Finish button clicked! Current exercises to save:",
+      currentExercises,
+    );
+
+    // 1. Send the data to Supabase using the state App.jsx already has!
+    const isSaved = await saveWorkoutToCloud(workoutMetadata, currentExercises);
+
+    // 2. ONLY show the Summary Screen if the database successfully saved it
+    if (isSaved) {
+      setIsFinished(true);
+    } else {
+      // You can replace this with a nice toast notification later!
+      alert("Oops! There was an error saving your workout to the cloud.");
+    }
+  };
 
   return (
     <div>
@@ -135,25 +157,25 @@ const handleFinishWorkout = async (workoutMetadata) => {
 
       {isFinished ? (
         // 1. SHOW SUMMARY SCREEN
-        <SummaryScreen 
-           exercises={currentExercises} 
-           onClose={() => {
-              setIsFinished(false);
-              // Optional: Reset workout logic would go here
-           }} 
+        <SummaryScreen
+          exercises={currentExercises}
+          onClose={() => {
+            setIsFinished(false); // Go back to workout screen
+            setCurrentExercises([]); // WIPE THE SLATE CLEAN!
+          }}
         />
       ) : isEditing ? (
         // 2. SHOW EDIT SCREEN
-        <ExerciseSelector 
-          exercises={currentExercises} 
+        <ExerciseSelector
+          exercises={currentExercises}
           onSave={handleSave}
-          onCancel={() => setIsEditing(false)} 
+          onCancel={() => setIsEditing(false)}
         />
       ) : (
         // 3. SHOW WORKOUT SCREEN (Default)
-        <WorkoutScreen 
+        <WorkoutScreen
           exercises={currentExercises}
-          onEdit={() => setIsEditing(true)} 
+          onEdit={() => setIsEditing(true)}
           onUpdateExercises={setCurrentExercises}
           onFinish={handleFinishWorkout} // <--- Connects the button
         />

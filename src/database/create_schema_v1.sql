@@ -30,3 +30,7 @@ CREATE TABLE sets (
   completed BOOLEAN DEFAULT false,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc', now())
 );
+
+
+
+-- THIS GOES INTO SUPABASE. NOT USED IN IDE.
