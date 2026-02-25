@@ -9,76 +9,79 @@ import { supabase } from "./supabaseClient";
 
 import { saveWorkoutToCloud } from "./database/finishWorkout";
 
+import { WORKOUT_PRESETS } from './data/presets';
+
 // Define the initial state of exercises here
 const INITIAL_DATA = [
-  {
-    id: "1",
-    name: "Barbell Benchpress",
-    icon: "dumbbell",
-    targetReps: "8-10",
-    sets: [
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-    ],
-    notes: "Felt strong today! Could have pushed for 99 reps on the last set.",
-  },
-  {
-    id: "2",
-    name: "Pull-Ups",
-    icon: "target",
-    targetReps: "8-10",
-        sets: [
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-    ],
-  },
-  {
-    id: "3",
-    name: "Incline Dumbbell Curl",
-    icon: "dumbbell",
-    targetReps: "8-10",
-        sets: [
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-    ],
-  },
-  {
-    id: "4",
-    name: "Leg Extensions",
-    icon: "flame",
-    targetReps: "7-9",
-        sets: [
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-    ],
-  },
-  {
-    id: "5",
-    name: "Spread Out",
-    icon: "dumbbell",
-    targetReps: "8-10",
-    sets: [
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-      { weight: "", reps: "" },
-    ],
-  },
+  // {
+  //   id: "1",
+  //   name: "Barbell Benchpress",
+  //   icon: "dumbbell",
+  //   targetReps: "8-10",
+  //   sets: [
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //   ],
+  //   notes: "Felt strong today! Could have pushed for 99 reps on the last set.",
+  // },
+  // {
+  //   id: "2",
+  //   name: "Pull-Ups",
+  //   icon: "target",
+  //   targetReps: "8-10",
+  //       sets: [
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //   ],
+  // },
+  // {
+  //   id: "3",
+  //   name: "Incline Dumbbell Curl",
+  //   icon: "dumbbell",
+  //   targetReps: "8-10",
+  //       sets: [
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //   ],
+  // },
+  // {
+  //   id: "4",
+  //   name: "Leg Extensions",
+  //   icon: "flame",
+  //   targetReps: "7-9",
+  //       sets: [
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //   ],
+  // },
+  // {
+  //   id: "5",
+  //   name: "Spread Out",
+  //   icon: "dumbbell",
+  //   targetReps: "8-10",
+  //   sets: [
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //     { weight: "", reps: "" },
+  //   ],
+  // },
 ];
 
 export default function App() {
   // 1. The "Single Source of Truth" for data
   const [currentExercises, setCurrentExercises] = useState(INITIAL_DATA);
+  const [selectedPresetKey, setSelectedPresetKey] = useState("");
 
   // 2. View States
   const [isEditing, setIsEditing] = useState(false);
@@ -149,35 +152,82 @@ export default function App() {
     }
   };
 
-  return (
-    <div>
-      {/* THE LOGIC CHAIN 
-         Structure: Condition ? (True) : Condition2 ? (True) : (False/Default)
-      */}
+return (
+    <div className="min-h-screen mx-auto bg-zinc-950 text-zinc-50">
+      {/* THE LOGIC CHAIN */}
 
       {isFinished ? (
         // 1. SHOW SUMMARY SCREEN
-        <SummaryScreen
-          exercises={currentExercises}
-          onClose={() => {
-            setIsFinished(false); // Go back to workout screen
-            setCurrentExercises([]); // WIPE THE SLATE CLEAN!
-          }}
+        <SummaryScreen 
+           exercises={currentExercises} 
+           onClose={() => {
+              setIsFinished(false);
+              setCurrentExercises([]); // Wipes the slate clean!
+           }} 
         />
       ) : isEditing ? (
         // 2. SHOW EDIT SCREEN
-        <ExerciseSelector
-          exercises={currentExercises}
+        <ExerciseSelector 
+          exercises={currentExercises} 
           onSave={handleSave}
-          onCancel={() => setIsEditing(false)}
+          onCancel={() => setIsEditing(false)} 
         />
+      ) : currentExercises.length === 0 ? (
+        // 3. SHOW START SCREEN (Because the workout is empty)
+        <div className="flex flex-col justify-center h-screen gap-6 p-6">
+          <h1 className="mb-4 text-3xl font-bold text-center">Ready to lift?</h1>
+          
+          <div className="flex flex-col gap-3">
+            <select 
+              className="w-full p-4 text-lg text-center border outline-none rounded-xl bg-zinc-900 border-zinc-800 focus:ring-2 focus:ring-emerald-500"
+              value={selectedPresetKey}
+              onChange={(e) => setSelectedPresetKey(e.target.value)}
+            >
+              <option value="" disabled>Choose a workout preset...</option>
+              {/* This loops through your presets object and generates the dropdown options! */}
+              {Object.entries(WORKOUT_PRESETS).map(([key, preset]) => (
+                <option key={key} value={key}>
+                  {preset.title}
+                </option>
+              ))}
+            </select>
+
+            <button 
+              onClick={() => {
+                if (selectedPresetKey) {
+                  // The Deep Copy! Clones the template so the original stays perfectly clean
+                  const freshWorkout = structuredClone(WORKOUT_PRESETS[selectedPresetKey].exercises);
+                  setCurrentExercises(freshWorkout);
+                  setSelectedPresetKey(""); // Resets the dropdown for next time
+                }
+              }}
+              disabled={!selectedPresetKey}
+              className="w-full text-lg font-semibold transition-colors h-14 bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-800 disabled:text-zinc-600 text-zinc-950 rounded-xl"
+            >
+              Start Preset
+            </button>
+          </div>
+
+          <div className="relative flex items-center py-4">
+            <div className="flex-grow border-t border-zinc-800"></div>
+            <span className="flex-shrink-0 mx-4 text-sm text-zinc-500">or</span>
+            <div className="flex-grow border-t border-zinc-800"></div>
+          </div>
+
+          <button 
+            onClick={() => setIsEditing(true)}
+            className="w-full text-lg font-semibold text-white transition-colors border h-14 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 rounded-xl"
+          >
+            Start Empty Workout
+          </button>
+        </div>
       ) : (
-        // 3. SHOW WORKOUT SCREEN (Default)
-        <WorkoutScreen
+        // 4. SHOW WORKOUT SCREEN (Active Workout)
+        <WorkoutScreen 
           exercises={currentExercises}
-          onEdit={() => setIsEditing(true)}
+          onEdit={() => setIsEditing(true)} 
           onUpdateExercises={setCurrentExercises}
-          onFinish={handleFinishWorkout} // <--- Connects the button
+          onFinish={handleFinishWorkout} 
         />
       )}
     </div>
