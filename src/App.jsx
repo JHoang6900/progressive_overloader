@@ -9,7 +9,7 @@ import { supabase } from "./supabaseClient";
 
 import { saveWorkoutToCloud } from "./database/finishWorkout";
 
-import { WORKOUT_PRESETS } from './data/presets';
+import { WORKOUT_PRESETS, BLANK_PRESET } from "./data/presets";
 
 // Define the initial state of exercises here
 const INITIAL_DATA = [
@@ -111,27 +111,28 @@ export default function App() {
 
   // Send the data to Supabase and then show the Summary Screen if successful
   const handleFinishWorkout = async (workoutMetadata) => {
-
-
     {
-  // 1. THE VALIDATION GUARDRAIL: Make sure there's at least 1 exercise before allowing the user to finish.
-  if (!currentExercises || currentExercises.length === 0) {
-    // Stop the function immediately and warn the user
-    alert("You need to add at least one exercise before finishing your workout!");
-    return; 
-  }
-}
+      // 1. THE VALIDATION GUARDRAIL: Make sure there's at least 1 exercise before allowing the user to finish.
+      if (!currentExercises || currentExercises.length === 0) {
+        // Stop the function immediately and warn the user
+        alert(
+          "You need to add at least one exercise before finishing your workout!",
+        );
+        return;
+      }
+    }
 
-  // 2. CHECK FOR ACTUAL DATA (No Ghost Rows!) CHECK FOR EMPTY SETS: Make sure at least one exercise has a set with weight or reps filled in.
-  const hasValidSets = currentExercises.some(ex => {
-    return ex.sets && ex.sets.some(set => set.weight || set.reps);
-  });
+    // 2. CHECK FOR ACTUAL DATA (No Ghost Rows!) CHECK FOR EMPTY SETS: Make sure at least one exercise has a set with weight or reps filled in.
+    const hasValidSets = currentExercises.some((ex) => {
+      return ex.sets && ex.sets.some((set) => set.weight || set.reps);
+    });
 
-  if (!hasValidSets) {
-    alert("You have exercises, but no sets logged! Add some weights or reps to finish.");
-    return;
-  }
-
+    if (!hasValidSets) {
+      alert(
+        "You have exercises, but no sets logged! Add some weights or reps to finish.",
+      );
+      return;
+    }
 
     console.log("Finish button clicked! Starting save...");
     console.log("Finish button clicked! Received metadata:", workoutMetadata);
@@ -152,38 +153,42 @@ export default function App() {
     }
   };
 
-return (
+  return (
     <div className="min-h-screen mx-auto bg-zinc-950 text-zinc-50">
       {/* THE LOGIC CHAIN */}
 
       {isFinished ? (
         // 1. SHOW SUMMARY SCREEN
-        <SummaryScreen 
-           exercises={currentExercises} 
-           onClose={() => {
-              setIsFinished(false);
-              setCurrentExercises([]); // Wipes the slate clean!
-           }} 
+        <SummaryScreen
+          exercises={currentExercises}
+          onClose={() => {
+            setIsFinished(false);
+            setCurrentExercises([]); // Wipes the slate clean!
+          }}
         />
       ) : isEditing ? (
         // 2. SHOW EDIT SCREEN
-        <ExerciseSelector 
-          exercises={currentExercises} 
+        <ExerciseSelector
+          exercises={currentExercises}
           onSave={handleSave}
-          onCancel={() => setIsEditing(false)} 
+          onCancel={() => setIsEditing(false)}
         />
       ) : currentExercises.length === 0 ? (
         // 3. SHOW START SCREEN (Because the workout is empty)
         <div className="flex flex-col justify-center h-screen gap-6 p-6">
-          <h1 className="mb-4 text-3xl font-bold text-center">Ready to lift?</h1>
-          
+          <h1 className="mb-4 text-3xl font-bold text-center">
+            Ready to lift?
+          </h1>
+
           <div className="flex flex-col gap-3">
-            <select 
+            <select
               className="w-full p-4 text-lg text-center border outline-none rounded-xl bg-zinc-900 border-zinc-800 focus:ring-2 focus:ring-emerald-500"
               value={selectedPresetKey}
               onChange={(e) => setSelectedPresetKey(e.target.value)}
             >
-              <option value="" disabled>Choose a workout preset...</option>
+              <option value="" disabled>
+                Choose a workout preset...
+              </option>
               {/* This loops through your presets object and generates the dropdown options! */}
               {Object.entries(WORKOUT_PRESETS).map(([key, preset]) => (
                 <option key={key} value={key}>
@@ -192,11 +197,13 @@ return (
               ))}
             </select>
 
-            <button 
+            <button
               onClick={() => {
                 if (selectedPresetKey) {
                   // The Deep Copy! Clones the template so the original stays perfectly clean
-                  const freshWorkout = structuredClone(WORKOUT_PRESETS[selectedPresetKey].exercises);
+                  const freshWorkout = structuredClone(
+                    WORKOUT_PRESETS[selectedPresetKey].exercises,
+                  );
                   setCurrentExercises(freshWorkout);
                   setSelectedPresetKey(""); // Resets the dropdown for next time
                 }
@@ -214,8 +221,22 @@ return (
             <div className="flex-grow border-t border-zinc-800"></div>
           </div>
 
-          <button 
-            onClick={() => setIsEditing(true)}
+          <button
+            onClick={() => {
+              // creates a fresh new variable that clones the blank presets.
+              const freshBlankWorkout = structuredClone(
+                BLANK_PRESET.blankPreset.exercises,
+              );
+
+              // 2. sets the state
+              setCurrentExercises(freshBlankWorkout);
+
+              // 3. reset the dropdown in case they had something selected
+              setSelectedPresetKey("");
+
+              // 4. send user straight to the Exercise Selector to fill in those blank exercises
+              setIsEditing(true);
+            }}
             className="w-full text-lg font-semibold text-white transition-colors border h-14 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 rounded-xl"
           >
             Start Empty Workout
@@ -223,11 +244,11 @@ return (
         </div>
       ) : (
         // 4. SHOW WORKOUT SCREEN (Active Workout)
-        <WorkoutScreen 
+        <WorkoutScreen
           exercises={currentExercises}
-          onEdit={() => setIsEditing(true)} 
+          onEdit={() => setIsEditing(true)}
           onUpdateExercises={setCurrentExercises}
-          onFinish={handleFinishWorkout} 
+          onFinish={handleFinishWorkout}
         />
       )}
     </div>

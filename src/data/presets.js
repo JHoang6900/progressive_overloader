@@ -101,5 +101,18 @@ export const WORKOUT_PRESETS = {
       createExercise("lb-5", "Calf Raises"),
       createExercise("lb-6", "Ab/Adductor Machine"),
     ]
-  }
+  },
 };
+
+export const BLANK_PRESET = {
+  blankPreset: {
+    title: "Blank Preset",
+    exercises: [
+      createExercise("blank-1", ""),
+      createExercise("blank-2", ""),
+      createExercise("blank-3", ""),
+      createExercise("blank-4", ""),
+      createExercise("blank-5", ""),
+    ]
+  }
+}
