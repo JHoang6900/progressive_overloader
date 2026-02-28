@@ -18,7 +18,10 @@ import {
   MessageCircleIcon,
   CircleEllipsis,
   SaveIcon,
+  Trash2Icon,
 } from "lucide-react";
+
+
 
 // switch function for exercise icons
 function ExerciseIcon({ type }) {
@@ -35,7 +38,7 @@ function ExerciseIcon({ type }) {
   }
 }
 
-function ExerciseCard({ exercise, index, onUpdateName, onUpdateRepRange }) {
+function ExerciseCard({ exercise, index, onUpdateName, onUpdateRepRange, onDelete }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const completedSets = exercise.sets.length;
   const totalSets = exercise.sets.length;
@@ -90,6 +93,15 @@ function ExerciseCard({ exercise, index, onUpdateName, onUpdateRepRange }) {
             {/* TODO: INSERT EDIT ICON HERE */}
             {/* <CircleEllipsis className="w-5 h-5 text-white" /> */}
 
+            {/* DELETE BUTTON */}
+            <button 
+              onClick={onDelete}
+              className="p-2 transition-colors rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-400/10"
+              title="Remove Exercise"
+            >
+              <Trash2Icon className="w-5 h-5" />
+            </button>
+
             <ChevronDownIcon className="w-5 h-5 text-zinc-500" />
           </div>
         </div>
@@ -112,6 +124,26 @@ export function ExerciseSelector({ exercises, onSave, onCancel }) {
     const updated = localExercises.map((ex) =>
       ex.id === id ? { ...ex, targetReps: newRepRange } : ex,
     );
+    setLocalExercises(updated);
+  };
+
+
+  const handleAddExercise = () => {
+    const newExercise = {
+      id: `temp-${Date.now()}`, // Generates a unique temporary ID based on the exact millisecond
+      name: "",
+      icon: "dumbbell",
+      targetReps: "8-10",
+      sets: [{ weight: "", reps: "" }], // pre-loads one empty set
+    };
+    
+    // Spread the existing exercises, and tack the new one onto the end!
+    setLocalExercises([...localExercises, newExercise]);
+  };
+
+  const deleteExercise = (idToRemove) => {
+    // .filter() keeps all exercises where the ID does NOT match the one we clicked
+    const updated = localExercises.filter((ex) => ex.id !== idToRemove);
     setLocalExercises(updated);
   };
 
@@ -175,12 +207,23 @@ export function ExerciseSelector({ exercises, onSave, onCancel }) {
                  onUpdateRepRange={(newRepRange) =>
                   updateExerciseRepRange(exercise.id, newRepRange)
                 }
+                onDelete={() => deleteExercise(exercise.id)}
 
 
               />
             ),
           )}
         </div>
+
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          onClick={handleAddExercise}
+          className="flex items-center justify-center w-full gap-2 p-4 mt-4 transition-colors border border-dashed rounded-xl bg-zinc-900/40 border-zinc-700 text-zinc-400 hover:text-white hover:bg-zinc-800/60 hover:border-zinc-500"
+        >
+          <PlusIcon className="w-5 h-5" />
+          <span className="font-medium">Add Exercise</span>
+        </motion.button>
 
         {/* Comments Section */}
         <motion.div

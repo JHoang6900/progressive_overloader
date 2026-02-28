@@ -224,12 +224,12 @@ export default function App() {
           <button
             onClick={() => {
               // creates a fresh new variable that clones the blank presets.
-              const freshBlankWorkout = structuredClone(
-                BLANK_PRESET.blankPreset.exercises,
-              );
+              // const freshBlankWorkout = structuredClone(
+              //   BLANK_PRESET.blankPreset.exercises,
+              // );
 
               // 2. sets the state
-              setCurrentExercises(freshBlankWorkout);
+              setCurrentExercises([]);
 
               // 3. reset the dropdown in case they had something selected
               setSelectedPresetKey("");
