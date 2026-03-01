@@ -12,7 +12,7 @@ import {
   MessageCircleIcon,
   Trash2,
   Plus,
-  CircleCheckBig
+  CircleCheckBig,
 } from "lucide-react";
 
 import WorkoutHeader from "./WorkoutHeader.jsx";
@@ -61,7 +61,7 @@ function ExerciseCard({
   onSetChange,
   onAddSet,
   onRemoveSet,
-  historicalData
+  historicalData,
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const completedSets = exercise.sets.length;
@@ -154,7 +154,7 @@ function ExerciseCard({
           </div>
 
           {/* Expanded Content */}
-          <AnimatePresence>
+        <AnimatePresence>
             {isExpanded && (
               <motion.div
                 initial={{
@@ -175,26 +175,16 @@ function ExerciseCard({
                 }}
                 className="overflow-hidden"
               >
-<div
+                <div
                   className="pt-4 mt-4 space-y-2 border-t border-zinc-800/50"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {exercise.sets.map((set, setIndex) => {
                     // 1. SINGLE SOURCE OF TRUTH: Find the history for this exact row
-const previousSet = historicalData[exercise.id]?.[setIndex];
+                    const previousSet = historicalData[exercise.id]?.[setIndex];
                     return (
                       <motion.div
                         key={setIndex}
-                        // ... keep existing animation props ...
-                        // 1. THE GREEN TOGGLE (Layer A)
-                        onClick={() =>
-                          onSetChange(
-                            exercise.id,
-                            setIndex,
-                            "completed",
-                            !set.completed,
-                          )
-                        }
                         className="flex flex-col gap-1 px-3 py-2 mb-2 rounded-lg bg-zinc-800/30"
                       >
                         {/* --- GHOST HEADER ROW --- */}
@@ -203,8 +193,6 @@ const previousSet = historicalData[exercise.id]?.[setIndex];
                             <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
                               Set {setIndex + 1}
                             </span>
-
-                            {/* DRY REFACTOR: One span, conditional trophy! */}
                             <span className="flex items-center gap-1 text-[10px] text-emerald-400/80 font-mono">
                               Prev: {previousSet.weight_display} x {previousSet.reps}
                               {previousSet.isPR && <span>🏆</span>}
@@ -218,9 +206,16 @@ const previousSet = historicalData[exercise.id]?.[setIndex];
                           
                           {/* 1. THE SET NUMBER / CHECKMARK */}
                           <div 
-                            className={`flex items-center justify-center w-6 h-6 shrink-0 mr-3 text-xs font-medium rounded-full ${
-                              set.completed ? "bg-emerald-500 text-zinc-900" : "bg-zinc-700/50 text-zinc-400"
+                            className={`cursor-pointer flex items-center justify-center w-6 h-6 shrink-0 mr-3 text-xs font-medium rounded-full ${
+                              set.completed ? "bg-emerald-500 text-zinc-900" : "bg-zinc-700/50 text-zinc-400 hover:bg-zinc-600/50"
                             }`}
+                            onClick={(e) => {
+                              e.stopPropagation(); 
+                              if (!set.completed && !set.weight && !set.reps) {
+                                return; 
+                              }
+                              onSetChange(exercise.id, setIndex, "completed", !set.completed);
+                            }}
                           >
                             {set.completed ? <CircleCheckBig className="w-3.5 h-3.5" /> : setIndex + 1}
                           </div>
@@ -228,13 +223,13 @@ const previousSet = historicalData[exercise.id]?.[setIndex];
                           {/* 2. THE WEIGHT INPUT */}
                           <div className="flex items-center flex-1 gap-3 px-3 py-2 mr-4">
                            <div
-                          className={` px-3 py-2 rounded-lg border transition-colors ${
-                            set.completed 
-                              ? "bg-emerald-800/40 border-emerald-500/30" 
-                              : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"
-                          }`}
-                          onClick={(event) => event.stopPropagation()}
-                        >
+                              className={` px-3 py-2 rounded-lg border transition-colors ${
+                                set.completed 
+                                  ? "bg-emerald-800/40 border-emerald-500/30" 
+                                  : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"
+                              }`}
+                              onClick={(event) => event.stopPropagation()}
+                            >
                               <WorkoutInput
                                 value={set.weight}
                                 onChange={(value) => onSetChange(exercise.id, setIndex, "weight", value)}
@@ -246,7 +241,7 @@ const previousSet = historicalData[exercise.id]?.[setIndex];
                             </span>
                           </div>
 
-                        {/* 3. THE REPS INPUT */}
+                          {/* 3. THE REPS INPUT */}
                           <div className="flex items-center w-20 gap-2 shrink-0">
                             <div
                               className={`flex-1 px-2 py-2 rounded-lg border transition-colors ${
@@ -285,7 +280,7 @@ const previousSet = historicalData[exercise.id]?.[setIndex];
                   })}
                 </div>
 
-                 {/* ADD SET BUTTON */}
+                {/* ADD SET BUTTON */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation(); // Prevents the card from accidentally collapsing
@@ -295,7 +290,6 @@ const previousSet = historicalData[exercise.id]?.[setIndex];
                 >
                   + Add Set
                 </button>
-
               </motion.div>
             )}
           </AnimatePresence>
@@ -330,7 +324,12 @@ function StatCard({ icon, value, label, delay }) {
   );
 }
 
-export function WorkoutScreen({ exercises, onEdit, onUpdateExercises, onFinish }) {
+export function WorkoutScreen({
+  exercises,
+  onEdit,
+  onUpdateExercises,
+  onFinish,
+}) {
   const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
   const [location, setLocation] = useState("MACU-M");
   const [user, setUser] = useState("JHoang");
@@ -346,10 +345,9 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises, onFinish }
   //   return locationHistory[exerciseId] || null;
   // };
 
-
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// 1. Create a dictionary to hold our ghost data. 
+  // 1. Create a dictionary to hold our ghost data.
   // It will look like: { "fbc-1": [{ weight_display: "135lbs", reps: "10" }] }
   const [historicalData, setHistoricalData] = useState({});
 
@@ -366,20 +364,20 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises, onFinish }
         if (newGhostData[exercise.id]) continue;
 
         // Look up the exercise type (freeweight vs machine) from our master list
-        const exerciseDef = ALL_EXERCISES.find(ex => 
-          (typeof ex === 'string' ? ex : ex.label) === exercise.name
+        const exerciseDef = ALL_EXERCISES.find(
+          (ex) => (typeof ex === "string" ? ex : ex.label) === exercise.name,
         );
-        const exerciseType = exerciseDef?.type || 'freeweight'; // Fallback just in case
+        const exerciseType = exerciseDef?.type || "freeweight"; // Fallback just in case
 
         // Fetch from Supabase! (Using your hardcoded MVP details for now)
         const history = await fetchPreviousSets(
-          "JHoang",          // Your User ID
-          exercise.name,     // e.g., "Barbell Benchpress"
-          exerciseType,      // e.g., "freeweight"
-          "MACU-M"           // Your current gym location
+          "JHoang", // Your User ID
+          exercise.name, // e.g., "Barbell Benchpress"
+          exerciseType, // e.g., "freeweight"
+          "MACU-M", // Your current gym location
         );
 
-      console.log(`Supabase returned this for ${exercise.name}:`, history);
+        console.log(`Supabase returned this for ${exercise.name}:`, history);
 
         // Save the history to our dictionary under this exercise's unique ID
         newGhostData[exercise.id] = history;
@@ -450,7 +448,6 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises, onFinish }
 
   return (
     <div className="w-full min-h-screen bg-zinc-950">
-      
       <WorkoutHeader
         onEdit={() => onEdit()}
         location={location}
@@ -528,53 +525,47 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises, onFinish }
           })}
         </div>
 
+        {/* FIXED BOTTOM BAR */}
+        <div className="bottom-0 left-0 right-0 p-4 border-t bg-zinc-950/80 backdrop-blur-md border-zinc-800">
+          <div className="flex items-center max-w-md gap-4 mx-auto">
+            {/* 1. ADD EXERCISE BUTTON (Small, Grey) */}
+            <button
+              // We'll wire this up later to open your selector
+              onClick={() => onEdit()}
+              className="flex flex-col items-center justify-center w-16 transition-colors h-14 rounded-xl bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700"
+            >
+              <PlusIcon className="w-6 h-6" />
+              <span className="text-[10px] font-medium mt-0.5">Add</span>
+            </button>
 
- {/* FIXED BOTTOM BAR */}
-      <div className="bottom-0 left-0 right-0 p-4 border-t bg-zinc-950/80 backdrop-blur-md border-zinc-800">
-        <div className="flex items-center max-w-md gap-4 mx-auto">
-          
-          {/* 1. ADD EXERCISE BUTTON (Small, Grey) */}
-          <button 
-            // We'll wire this up later to open your selector
-            onClick={() => onEdit()} 
-            className="flex flex-col items-center justify-center w-16 transition-colors h-14 rounded-xl bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700"
-          >
-            <PlusIcon className="w-6 h-6" />
-            <span className="text-[10px] font-medium mt-0.5">Add</span>
-          </button>
+            {/* 2. FINISH WORKOUT BUTTON (Big, Green) */}
+            <button
+              onClick={function () {
+                // 1. Package the local state into our metadata object
+                const metadata = {
+                  location: location,
+                  userName: user,
+                  date: date,
+                };
 
-          {/* 2. FINISH WORKOUT BUTTON (Big, Green) */}
-          <button
-            onClick={function() {
+                // // 2. Call the saveWorkoutToCloud function
+                // saveWorkoutToCloud(metadata, exercises);
 
-              // 1. Package the local state into our metadata object
-    const metadata = {
-      location: location,
-      userName: user, 
-      date: date
-    };
-
-    // // 2. Call the saveWorkoutToCloud function
-    // saveWorkoutToCloud(metadata, exercises);
-
-              onFinish(metadata);
-              console.log("Finish Workout Clicked!");
-            }}
-            
-            className="flex-1 text-lg font-semibold tracking-wide transition-colors shadow-lg h-14 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl shadow-emerald-500/20"
-          >
-            <div className="flex items-center justify-center">
-              <CircleCheckBig className="w-8 h-8" /> 
-              <span className="ml-2">Done</span>
-            </div>
-          </button>
-          
+                onFinish(metadata);
+                console.log("Finish Workout Clicked!");
+              }}
+              className="flex-1 text-lg font-semibold tracking-wide transition-colors shadow-lg h-14 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl shadow-emerald-500/20"
+            >
+              <div className="flex items-center justify-center">
+                <CircleCheckBig className="w-8 h-8" />
+                <span className="ml-2">Done</span>
+              </div>
+            </button>
+          </div>
         </div>
-      </div>
 
-      {/* Delete your old 'Floating Action Button' motion.button code blocks 
+        {/* Delete your old 'Floating Action Button' motion.button code blocks 
           since we replaced it with the 'Add' button in the bar above! */}
-
 
         {/* (INACTIVE) Comments Section */}
         <motion.div
