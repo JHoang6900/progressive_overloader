@@ -65,7 +65,25 @@ function ExerciseCard({ exercise, index, onUpdateName, onUpdateRepRange, onDelet
                   // supposedly .tolowerCase() is needed for matching in Combobox
                   value={exercise.name.toLowerCase()}
                   // FIX B: Call the Parent's function, not a local setter
-                  onSelect={(newName) => onUpdateName(newName)}
+                 onSelect={(newName) => {
+                    // 1. Safety check: if they toggle the selection off, don't crash
+                    if (!newName) return;
+
+                    // 2. The Lookup: Find the EXACT match in ALL_EXERCISES (case-insensitive)
+                    const match = ALL_EXERCISES.find((ex) => {
+                      // If it's an object {label, value}, grab the label. If it's a string, grab the string.
+                      const textToCompare = typeof ex === "string" ? ex : ex.label;
+                      return textToCompare.toLowerCase() === newName.toLowerCase();
+                    });
+
+                    // 3. Extract the properly capitalized name from the match
+                    const properSpelling = match
+                      ? (typeof match === "string" ? match : match.label)
+                      : newName;
+
+                    // 4. Update the parent state!
+                    onUpdateName(properSpelling);
+                  }}
                   placeholder="Select exercise..."
                 />
               </h3>
@@ -166,10 +184,16 @@ export function ExerciseSelector({ exercises, onSave, onCancel }) {
             </h1>
             <p className="text-xs text-zinc-500">v2 • Jan 21, 2026</p>
           </div>
-          <button
+     <button
             className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60"
             onClick={() => {
-              onSave(localExercises);
+              // 1. The Magic Cleanup: Filter out any exercise where the name is empty or just spaces
+              const cleanedExercises = localExercises.filter(
+                (ex) => ex.name && ex.name.trim() !== ""
+              );
+              
+              // 2. Pass the clean list up to App.jsx!
+              onSave(cleanedExercises);
             }}
           >
             <SaveIcon className="w-5 h-5" />
