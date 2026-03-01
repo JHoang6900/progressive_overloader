@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronLeftIcon,
@@ -16,7 +16,10 @@ import {
 } from "lucide-react";
 
 import WorkoutHeader from "./WorkoutHeader.jsx";
-import { EXERCISE_HISTORY } from "./data/mockHistory.js";
+// import { EXERCISE_HISTORY } from "./data/mockHistory.js";
+
+import { fetchPreviousSets } from "./database/fetchPreviousSets.js";
+import { ALL_EXERCISES } from "./data/exercises.js";
 
 // switch function for exercise icons
 function ExerciseIcon({ type }) {
@@ -58,6 +61,7 @@ function ExerciseCard({
   onSetChange,
   onAddSet,
   onRemoveSet,
+  historicalData
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const completedSets = exercise.sets.length;
@@ -171,21 +175,18 @@ function ExerciseCard({
                 }}
                 className="overflow-hidden"
               >
-                <div
+<div
                   className="pt-4 mt-4 space-y-2 border-t border-zinc-800/50"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {exercise.sets.map((set, setIndex) => {
-                    // 1. FIND THE MATCHING GHOST SET
-                    // We use optional chaining (?.) just in case the history has fewer sets
-                    const ghostSet = ghost?.sets?.[setIndex];
-
+                    // 1. SINGLE SOURCE OF TRUTH: Find the history for this exact row
+const previousSet = historicalData[exercise.id]?.[setIndex];
                     return (
                       <motion.div
                         key={setIndex}
                         // ... keep existing animation props ...
                         // 1. THE GREEN TOGGLE (Layer A)
-                        // If clicked on the row background, toggle 'completed'
                         onClick={() =>
                           onSetChange(
                             exercise.id,
@@ -197,129 +198,91 @@ function ExerciseCard({
                         className="flex flex-col gap-1 px-3 py-2 mb-2 rounded-lg bg-zinc-800/30"
                       >
                         {/* --- GHOST HEADER ROW --- */}
-                        {ghostSet && (
+                        {previousSet && (
                           <div className="flex items-end justify-between px-1 mb-1">
                             <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-semibold">
                               Set {setIndex + 1}
                             </span>
 
-                            {/* TODO: REFACTOR TO KEEP CODE DRY INSTEAD OF WRITING 2 SPANS */}
-                            {ghostSet.isPR ? (
-                              <span className="flex items-center text-[10px] text-emerald-400/80 font-mono">
-                                Prev: {ghostSet.weight} x {ghostSet.reps} 🏆
-                              </span>
-                            ) : (
-                              <span className="text-[10px] text-emerald-400/80 font-mono">
-                                Prev: {ghostSet.weight} x {ghostSet.reps}
-                              </span>
-                            )}
+                            {/* DRY REFACTOR: One span, conditional trophy! */}
+                            <span className="flex items-center gap-1 text-[10px] text-emerald-400/80 font-mono">
+                              Prev: {previousSet.weight_display} x {previousSet.reps}
+                              {previousSet.isPR && <span>🏆</span>}
+                            </span>
                           </div>
                         )}
                         {/* ----------------------------- */}
 
                         {/* EXISTING INPUT ROW */}
-                  {/* EXISTING INPUT ROW */}
-<div className="flex items-center justify-between h-8">
-  
-  {/* 1. THE SET NUMBER / CHECKMARK */}
-  {/* Removed the !ghostSet wrapper so the width is ALWAYS consistent */}
-  <div 
-    className={`flex items-center justify-center w-6 h-6 shrink-0 mr-3 text-xs font-medium rounded-full ${
-      set.completed ? "bg-emerald-500 text-zinc-900" : "bg-zinc-700/50 text-zinc-400"
-    }`}
-  >
-    {set.completed ? <CircleCheckBig className="w-3.5 h-3.5" /> : setIndex + 1}
-  </div>
+                        <div className="flex items-center justify-between h-8">
+                          
+                          {/* 1. THE SET NUMBER / CHECKMARK */}
+                          <div 
+                            className={`flex items-center justify-center w-6 h-6 shrink-0 mr-3 text-xs font-medium rounded-full ${
+                              set.completed ? "bg-emerald-500 text-zinc-900" : "bg-zinc-700/50 text-zinc-400"
+                            }`}
+                          >
+                            {set.completed ? <CircleCheckBig className="w-3.5 h-3.5" /> : setIndex + 1}
+                          </div>
 
-  {/* 2. THE WEIGHT INPUT */}
-  <div className="flex items-center flex-1 gap-3 px-3 py-2 mr-4">
-   <div
-  className={` px-3 py-2 rounded-lg border transition-colors ${
-    set.completed 
-      ? "bg-emerald-800/40 border-emerald-500/30" 
-      : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"
-  }`}
-  onClick={(event) => event.stopPropagation()}
->
-      <WorkoutInput
-        value={set.weight}
-        onChange={(value) => onSetChange(exercise.id, setIndex, "weight", value)}
-        placeholder="0"
-      />
-    </div>
-    <span className={`text-xs font-medium ${set.completed ? 'text-emerald-500' : 'text-zinc-500'}`}>
-      lbs
-    </span>
-  </div>
+                          {/* 2. THE WEIGHT INPUT */}
+                          <div className="flex items-center flex-1 gap-3 px-3 py-2 mr-4">
+                           <div
+                          className={` px-3 py-2 rounded-lg border transition-colors ${
+                            set.completed 
+                              ? "bg-emerald-800/40 border-emerald-500/30" 
+                              : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"
+                          }`}
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                              <WorkoutInput
+                                value={set.weight}
+                                onChange={(value) => onSetChange(exercise.id, setIndex, "weight", value)}
+                                placeholder={previousSet ? previousSet.weight_display : "Weight"} 
+                              />
+                            </div>
+                            <span className={`text-xs font-medium ${set.completed ? 'text-emerald-500' : 'text-zinc-500'}`}>
+                              lbs
+                            </span>
+                          </div>
 
-{/* 3. THE REPS INPUT */}
-  <div className="flex items-center w-20 gap-2 shrink-0">
-    {/* The colored box specifically for the input */}
-    <div
-      className={`flex-1 px-2 py-2 rounded-lg border transition-colors ${
-        set.completed
-          ? "bg-emerald-800/40 border-emerald-500/30"
-          : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"
-      }`}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <WorkoutInput
-        value={set.reps}
-        onChange={(val) => onSetChange(exercise.id, setIndex, "reps", val)}
-        placeholder="0"
-        align="center"
-      />
-    </div>
-    {/* The label sitting outside the box */}
-    <span className={`text-xs font-medium shrink-0 ${set.completed ? 'text-emerald-500' : 'text-zinc-500'}`}>
-      reps
-    </span>
-  </div>
+                        {/* 3. THE REPS INPUT */}
+                          <div className="flex items-center w-20 gap-2 shrink-0">
+                            <div
+                              className={`flex-1 px-2 py-2 rounded-lg border transition-colors ${
+                                set.completed
+                                  ? "bg-emerald-800/40 border-emerald-500/30"
+                                  : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"
+                              }`}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <WorkoutInput
+                                value={set.reps}
+                                onChange={(val) => onSetChange(exercise.id, setIndex, "reps", val)}
+                                placeholder={previousSet ? previousSet.reps : "Reps"}   
+                                align="center" 
+                              />
+                            </div>
+                            <span className={`text-xs font-medium shrink-0 ${set.completed ? 'text-emerald-500' : 'text-zinc-500'}`}>
+                              reps
+                            </span>
+                          </div>
 
-  {/* 4. THE TRASH BUTTON */}
-  <button
-    onClick={(e) => {
-      e.stopPropagation(); 
-      onRemoveSet(exercise.id, setIndex);
-    }}
-    className="ml-3 p-1.5 shrink-0 text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 rounded-md transition-colors"
-  >
-    <Trash2 className="w-3.5 h-3.5" />
-  </button>
-  
-</div>
+                          {/* 4. THE TRASH BUTTON */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation(); 
+                              onRemoveSet(exercise.id, setIndex);
+                            }}
+                            className="ml-3 p-1.5 shrink-0 text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 rounded-md transition-colors"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                          
+                        </div>
                       </motion.div>
                     );
                   })}
-
-                  {/* --- ADD SET --- */}
-                  <button
-                    onClick={() => onAddSet(exercise.id)}
-                    className="flex items-center justify-center w-full gap-2 py-3 mt-2 text-sm font-medium transition-colors border border-dashed rounded-lg text-zinc-500 border-zinc-700/50 hover:bg-zinc-800/30 hover:text-zinc-300 hover:border-zinc-600"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Add Set</span>
-                  </button>
-
-                  {exercise.notes && (
-                    <motion.div
-                      initial={{
-                        opacity: 0,
-                      }}
-                      animate={{
-                        opacity: 1,
-                      }}
-                      transition={{
-                        delay: exercise.sets.length * 0.05,
-                      }}
-                      className="p-3 mt-3 border rounded-lg bg-zinc-800/20 border-zinc-700/30"
-                    >
-                      <p className="text-sm text-zinc-400">
-                        <span className="text-zinc-500">Note:</span>{" "}
-                        {exercise.notes}
-                      </p>
-                    </motion.div>
-                  )}
                 </div>
               </motion.div>
             )}
@@ -361,15 +324,66 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises, onFinish }
   const [user, setUser] = useState("JHoang");
   const [date, setDate] = useState(new Date());
 
-  const getGhostData = (exerciseId) => {
-    const locationHistory = EXERCISE_HISTORY[location];
-    console.log("Location History ~>", locationHistory);
-    if (!locationHistory) return null;
+  // const getGhostData = (exerciseId) => {
+  //   const locationHistory = EXERCISE_HISTORY[location];
+  //   console.log("Location History ~>", locationHistory);
+  //   if (!locationHistory) return null;
 
-    // returns the whole object (sets, notes, date, etc.)
-    console.log("locationHistory[exerciseId] ~>", locationHistory[exerciseId]);
-    return locationHistory[exerciseId] || null;
-  };
+  //   // returns the whole object (sets, notes, date, etc.)
+  //   console.log("locationHistory[exerciseId] ~>", locationHistory[exerciseId]);
+  //   return locationHistory[exerciseId] || null;
+  // };
+
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// 1. Create a dictionary to hold our ghost data. 
+  // It will look like: { "fbc-1": [{ weight_display: "135lbs", reps: "10" }] }
+  const [historicalData, setHistoricalData] = useState({});
+
+  // 2. The Background Fetcher
+  useEffect(() => {
+    const loadGhostSets = async () => {
+      // Create a copy of whatever ghost data we already have
+      const newGhostData = { ...historicalData };
+      let hasNewData = false;
+
+      // Loop through the active exercises
+      for (const exercise of exercises) {
+        // If we already fetched the history for this specific exercise card, skip it!
+        if (newGhostData[exercise.id]) continue;
+
+        // Look up the exercise type (freeweight vs machine) from our master list
+        const exerciseDef = ALL_EXERCISES.find(ex => 
+          (typeof ex === 'string' ? ex : ex.label) === exercise.name
+        );
+        const exerciseType = exerciseDef?.type || 'freeweight'; // Fallback just in case
+
+        // Fetch from Supabase! (Using your hardcoded MVP details for now)
+        const history = await fetchPreviousSets(
+          "JHoang",          // Your User ID
+          exercise.name,     // e.g., "Barbell Benchpress"
+          exerciseType,      // e.g., "freeweight"
+          "MACU-M"           // Your current gym location
+        );
+
+      console.log(`Supabase returned this for ${exercise.name}:`, history);
+
+        // Save the history to our dictionary under this exercise's unique ID
+        newGhostData[exercise.id] = history;
+        hasNewData = true;
+      }
+
+      // If we found new history, update the React state so the UI re-renders!
+      if (hasNewData) {
+        setHistoricalData(newGhostData);
+      }
+    };
+
+    loadGhostSets();
+  }, [exercises]); // This runs every time the 'exercises' array changes
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   const handleUpdateSet = (exerciseId, setIndex, field, newValue) => {
     const updatedExercises = exercises.map((ex) => {
@@ -484,7 +498,7 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises, onFinish }
           {exercises.map((exercise, index) => {
             // 1. CALL THE FUNCTION
             // calculate the specific history for this exercise ID
-            const ghostData = getGhostData(exercise.id);
+            // const ghostData = getGhostData(exercise.id);
 
             return (
               <ExerciseCard
@@ -492,10 +506,11 @@ export function WorkoutScreen({ exercises, onEdit, onUpdateExercises, onFinish }
                 exercise={exercise}
                 index={index}
                 // 2. PASS THE DATA DOWN
-                ghost={ghostData}
+                // ghost={ghostData}
                 onSetChange={handleUpdateSet}
                 onAddSet={handleAddSet}
                 onRemoveSet={handleRemoveSet}
+                historicalData={historicalData}
               />
             );
           })}
