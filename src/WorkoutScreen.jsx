@@ -284,6 +284,18 @@ const previousSet = historicalData[exercise.id]?.[setIndex];
                     );
                   })}
                 </div>
+
+                 {/* ADD SET BUTTON */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevents the card from accidentally collapsing
+                    onAddSet(exercise.id);
+                  }}
+                  className="w-full py-2 mt-3 text-sm font-medium transition-colors rounded-lg text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20"
+                >
+                  + Add Set
+                </button>
+
               </motion.div>
             )}
           </AnimatePresence>
