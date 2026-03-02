@@ -66,6 +66,32 @@ function ExerciseCard({
   const [isExpanded, setIsExpanded] = useState(false);
   const completedSets = exercise.sets.length;
   const totalSets = exercise.sets.length;
+
+
+
+
+// 🌟 AUTO-GREEN CHECKER 🌟
+  useEffect(() => {
+    // Loop through all the sets for this specific exercise
+    exercise.sets.forEach((set, setIndex) => {
+      
+      // Check if both fields have at least one character typed in them
+      const hasWeight = set.weight && set.weight.toString().trim() !== "";
+      const hasReps = set.reps && set.reps.toString().trim() !== "";
+
+      // Condition 1: If both are filled, and it's NOT green yet... turn it green!
+      if (hasWeight && hasReps && !set.completed) {
+        onSetChange(exercise.id, setIndex, "completed", true);
+      }
+      
+      // Condition 2: If they delete a value, and it IS green... uncheck it automatically!
+      else if ((!hasWeight || !hasReps) && set.completed) {
+        onSetChange(exercise.id, setIndex, "completed", false);
+      }
+    });
+  }, [exercise.sets, exercise.id, onSetChange]); // the watcher runs every time a set changes
+
+
   return (
     <motion.div
       initial={{
@@ -154,7 +180,7 @@ function ExerciseCard({
           </div>
 
           {/* Expanded Content */}
-        <AnimatePresence>
+          <AnimatePresence>
             {isExpanded && (
               <motion.div
                 initial={{
@@ -194,7 +220,8 @@ function ExerciseCard({
                               Set {setIndex + 1}
                             </span>
                             <span className="flex items-center gap-1 text-[10px] text-emerald-400/80 font-mono">
-                              Prev: {previousSet.weight_display} x {previousSet.reps}
+                              Prev: {previousSet.weight_display} x{" "}
+                              {previousSet.reps}
                               {previousSet.isPR && <span>🏆</span>}
                             </span>
                           </div>
@@ -203,40 +230,69 @@ function ExerciseCard({
 
                         {/* EXISTING INPUT ROW */}
                         <div className="flex items-center justify-between h-8">
-                          
-                          {/* 1. THE SET NUMBER / CHECKMARK */}
-                          <div 
-                            className={`cursor-pointer flex items-center justify-center w-6 h-6 shrink-0 mr-3 text-xs font-medium rounded-full ${
-                              set.completed ? "bg-emerald-500 text-zinc-900" : "bg-zinc-700/50 text-zinc-400 hover:bg-zinc-600/50"
-                            }`}
+                          {/* 1. THE SET NUMBER / CHECKMARK (WITH MASSIVE HITBOX) */}
+                          <button
+                            type="button"
                             onClick={(e) => {
-                              e.stopPropagation(); 
+                              e.stopPropagation();
                               if (!set.completed && !set.weight && !set.reps) {
-                                return; 
+                                return;
                               }
-                              onSetChange(exercise.id, setIndex, "completed", !set.completed);
+                              onSetChange(
+                                exercise.id,
+                                setIndex,
+                                "completed",
+                                !set.completed,
+                              );
                             }}
+                            // 👇 an invisible massive wrapper! (p-3 adds padding, -ml-3 pulls it left so UI doesn't break) -- increases the hitbox to make it easier to click without breaking UI.
+                            className="p-4 mr-1 -ml-4 outline-none cursor-pointer group" // border border-red-700 to visually see.
                           >
-                            {set.completed ? <CircleCheckBig className="w-3.5 h-3.5" /> : setIndex + 1}
-                          </div>
+                            <div
+                              className={`flex items-center justify-center w-6 h-6 shrink-0 text-xs font-medium rounded-full transition-colors ${
+                                set.completed
+                                  ? "bg-emerald-500 text-zinc-900"
+                                  : "bg-zinc-700/50 text-zinc-400 group-hover:bg-zinc-600/50"
+                              }`}
+                            >
+                              {set.completed ? (
+                                <CircleCheckBig className="w-3.5 h-3.5" />
+                              ) : (
+                                setIndex + 1
+                              )}
+                            </div>
+                          </button>
 
                           {/* 2. THE WEIGHT INPUT */}
                           <div className="flex items-center flex-1 gap-3 px-3 py-2 mr-4">
-                           <div
+                            <div
                               className={` px-3 py-2 rounded-lg border transition-colors ${
-                                set.completed 
-                                  ? "bg-emerald-800/40 border-emerald-500/30" 
+                                set.completed
+                                  ? "bg-emerald-800/40 border-emerald-500/30"
                                   : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"
                               }`}
                               onClick={(event) => event.stopPropagation()}
                             >
                               <WorkoutInput
                                 value={set.weight}
-                                onChange={(value) => onSetChange(exercise.id, setIndex, "weight", value)}
-                                placeholder={previousSet ? previousSet.weight_display : "Weight"} 
+                                onChange={(value) =>
+                                  onSetChange(
+                                    exercise.id,
+                                    setIndex,
+                                    "weight",
+                                    value,
+                                  )
+                                }
+                                placeholder={
+                                  previousSet
+                                    ? previousSet.weight_display
+                                    : "Weight"
+                                }
                               />
                             </div>
-                            <span className={`text-xs font-medium ${set.completed ? 'text-emerald-500' : 'text-zinc-500'}`}>
+                            <span
+                              className={`text-xs font-medium ${set.completed ? "text-emerald-500" : "text-zinc-500"}`}
+                            >
                               lbs
                             </span>
                           </div>
@@ -253,12 +309,23 @@ function ExerciseCard({
                             >
                               <WorkoutInput
                                 value={set.reps}
-                                onChange={(val) => onSetChange(exercise.id, setIndex, "reps", val)}
-                                placeholder={previousSet ? previousSet.reps : "Reps"}   
-                                align="center" 
+                                onChange={(val) =>
+                                  onSetChange(
+                                    exercise.id,
+                                    setIndex,
+                                    "reps",
+                                    val,
+                                  )
+                                }
+                                placeholder={
+                                  previousSet ? previousSet.reps : "Reps"
+                                }
+                                align="center"
                               />
                             </div>
-                            <span className={`text-xs font-medium shrink-0 ${set.completed ? 'text-emerald-500' : 'text-zinc-500'}`}>
+                            <span
+                              className={`text-xs font-medium shrink-0 ${set.completed ? "text-emerald-500" : "text-zinc-500"}`}
+                            >
                               reps
                             </span>
                           </div>
@@ -266,14 +333,13 @@ function ExerciseCard({
                           {/* 4. THE TRASH BUTTON */}
                           <button
                             onClick={(e) => {
-                              e.stopPropagation(); 
+                              e.stopPropagation();
                               onRemoveSet(exercise.id, setIndex);
                             }}
-                            className="ml-3 p-1.5 shrink-0 text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 rounded-md transition-colors"
+                            className="p-4 ml-3 transition-colors border border-red-500 rounded-md shrink-0 text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 group group-hover" // border border-red-500
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            <Trash2 className="w-3.5 h-3.5 pointer-events-none" /> {/* // pointer-events-none makes sure the icon itself doesn't interfere with the button's click area hitbox. */}
                           </button>
-                          
                         </div>
                       </motion.div>
                     );
@@ -422,7 +488,7 @@ export function WorkoutScreen({
         const previousSet = ex.sets[ex.sets.length - 1];
         const newSet = {
           weight: previousSet ? previousSet.weight : "", // Copy weight or empty to save typing
-          reps: previousSet ? previousSet.reps : "", // Copy reps or empty
+          reps: "", // Copy reps or empty use: "previousSet ? previousSet.reps :" if we need to swap back to copying reps as well.
           completed: false,
         };
 
