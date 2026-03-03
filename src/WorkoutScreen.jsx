@@ -336,7 +336,7 @@ function ExerciseCard({
                               e.stopPropagation();
                               onRemoveSet(exercise.id, setIndex);
                             }}
-                            className="p-4 ml-3 transition-colors border border-red-500 rounded-md shrink-0 text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 group group-hover" // border border-red-500
+                            className="p-4 ml-3 transition-colors rounded-md shrink-0 text-zinc-600 hover:text-rose-500 hover:bg-rose-500/10 group group-hover" // border border-red-500
                           >
                             <Trash2 className="w-3.5 h-3.5 pointer-events-none" /> {/* // pointer-events-none makes sure the icon itself doesn't interfere with the button's click area hitbox. */}
                           </button>
@@ -395,10 +395,12 @@ export function WorkoutScreen({
   onEdit,
   onUpdateExercises,
   onFinish,
+  currentUser,
+  currentLocation
 }) {
   const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
-  const [location, setLocation] = useState("MACU-M");
-  const [user, setUser] = useState("JHoang");
+  // const [location, setLocation] = useState("MACU-M");
+  // const [user, setUser] = useState("JHoang");
   const [date, setDate] = useState(new Date());
 
   // const getGhostData = (exerciseId) => {
@@ -439,12 +441,12 @@ if (!exercise.name || exercise.name === "") continue;
         );
         const exerciseType = exerciseDef?.type || "freeweight"; // Fallback just in case
 
-        // Fetch from Supabase! (Using your hardcoded MVP details for now)
+        // Fetch from Supabase! 
         const history = await fetchPreviousSets(
-          "JHoang", // Your User ID
+          currentUser, // Your User ID
           exercise.name, // e.g., "Barbell Benchpress"
           exerciseType, // e.g., "freeweight"
-          "MACU-M", // Your current gym location
+          currentLocation, // Your current gym location
         );
 
         console.log(`Supabase returned this for ${exercise.name}:`, history);
@@ -462,6 +464,8 @@ if (!exercise.name || exercise.name === "") continue;
 
     loadGhostSets();
   }, [exercises]); // This runs every time the 'exercises' array changes
+  
+  // TODO: [exercises, currentUser, currentLocation] - we should also re-run if the user or location changes, to ensure the ghost data is always relevant to who's working out and where they are.
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -520,12 +524,14 @@ if (!exercise.name || exercise.name === "") continue;
     <div className="w-full min-h-screen bg-zinc-950">
       <WorkoutHeader
         onEdit={() => onEdit()}
-        location={location}
-        user={user}
+        // location={location}
+        // user={user}
         date={date}
-        setLocation={setLocation}
-        setUser={setUser}
+        // setLocation={setLocation}
+        // setUser={setUser}
         setDate={setDate}
+        user={currentUser}           // Mapping currentUser -> user
+        location={currentLocation}   // Mapping currentLocation -> location
       />
       {/* Main Content */}
       <main className="px-4 py-6 pb-24">
@@ -613,8 +619,8 @@ if (!exercise.name || exercise.name === "") continue;
               onClick={function () {
                 // 1. Package the local state into our metadata object
                 const metadata = {
-                  location: location,
-                  userName: user,
+                  location: currentLocation,
+                  userName: currentUser,
                   date: date,
                 };
 

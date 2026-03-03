@@ -46,6 +46,21 @@ const USER_OPTIONS = [
 
 // --- SUB-COMPONENTS ---
 
+
+// 1. The Simplified Display Chip (Replaces the Dropdown!)
+function MetadataChip({ icon, value }) {
+  return (
+    <div className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800/60 rounded-lg text-sm text-zinc-300">
+      <span className="text-zinc-500 shrink-0">{icon}</span>
+      <span className="font-medium">{value}</span>
+    </div>
+  );
+}
+
+
+
+
+
 // 1. The Reusable Selector (Dropdown)
 function MetadataSelector({ icon, value, onChange, options, label }) {
   return (
@@ -157,21 +172,14 @@ export function WorkoutHeader({ onEdit
         <WorkoutDatePicker date={date} setDate={setDate} />
 
         {/* 2. Location */}
-        <MetadataSelector
+        <MetadataChip
           icon={<MapPinIcon className="w-3.5 h-3.5" />}
-          label="Location"
-          options={LOCATION_OPTIONS}
-          value={location}
-          onChange={setLocation}
+          value={location} 
         />
-
         {/* 3. User */}
-        <MetadataSelector
+        <MetadataChip
           icon={<UserIcon className="w-3.5 h-3.5" />}
-          label="User"
-          options={USER_OPTIONS}
-          value={user}
-          onChange={setUser}
+          value={user} 
         />
       </div>
     </motion.header>

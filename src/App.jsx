@@ -11,6 +11,8 @@ import { saveWorkoutToCloud } from "./database/finishWorkout";
 
 import { WORKOUT_PRESETS, BLANK_PRESET } from "./data/presets";
 
+import WelcomeScreen from "./WelcomeScreen";
+
 // Define the initial state of exercises here
 const INITIAL_DATA = [
 //  {
@@ -78,6 +80,12 @@ const INITIAL_DATA = [
 ];
 
 export default function App() {
+
+
+  const [currentUser, setCurrentUser] = useState("");
+  const [currentLocation, setCurrentLocation] = useState("");
+
+
   // 1. The "Single Source of Truth" for data
   const [currentExercises, setCurrentExercises] = useState(INITIAL_DATA);
   const [selectedPresetKey, setSelectedPresetKey] = useState("");
@@ -111,6 +119,15 @@ export default function App() {
   // Send the data to Supabase and then show the Summary Screen if successful
   const handleFinishWorkout = async (workoutMetadata) => {
     {
+          // Guard Rail: Make sure all exercises have names before allowing the save to proceed.
+  const hasUnnamedExercises = currentExercises.some(ex => !ex.name || ex.name.trim() === "");
+  
+  if (hasUnnamedExercises) {
+    alert("Oops! Please select an exercise name for all your blank cards before finishing.");
+    return; // Stops the save!
+  }
+
+
       // 1. THE VALIDATION GUARDRAIL: Make sure there's at least 1 exercise before allowing the user to finish.
       if (!currentExercises || currentExercises.length === 0) {
         // Stop the function immediately and warn the user
@@ -135,13 +152,22 @@ export default function App() {
 
     console.log("Finish button clicked! Starting save...");
     console.log("Finish button clicked! Received metadata:", workoutMetadata);
+    console.log("Finish button clicked! Current user is:", currentUser);
+    console.log("Finish button clicked! Current location is:", currentLocation);
     console.log(
       "Finish button clicked! Current exercises to save:",
       currentExercises,
     );
 
-    // 1. Send the data to Supabase using the state App.jsx already has!
-    const isSaved = await saveWorkoutToCloud(workoutMetadata, currentExercises);
+    // Send the data to Supabase using the state App.jsx already has!
+    // Send the data to Supabase correctly formatted!
+    // Arg 1: An object with the user and location
+    // Arg 2: The array of exercises
+    // explanation: Supabase is setup currently to expect two arguments.. so we group currentUser and currentLocation into an object to pass as the first argument, and then we pass the exercises array as the second argument.
+    const isSaved = await saveWorkoutToCloud(
+      { userName: currentUser, location: currentLocation }, 
+      currentExercises
+    );
 
     // 2. ONLY show the Summary Screen if the database successfully saved it
     if (isSaved) {
@@ -154,9 +180,18 @@ export default function App() {
 
   return (
     <div className="min-h-screen mx-auto bg-zinc-950 text-zinc-50">
-      {/* THE LOGIC CHAIN */}
 
-      {isFinished ? (
+
+
+{!currentUser ? (
+        <WelcomeScreen 
+          onStart={(name, location) => {
+            setCurrentUser(name);
+            setCurrentLocation(location);
+          }} 
+        />
+
+         ) : isFinished ? (
         // 1. SHOW SUMMARY SCREEN
         <SummaryScreen
           exercises={currentExercises}
@@ -248,6 +283,8 @@ export default function App() {
           onEdit={() => setIsEditing(true)}
           onUpdateExercises={setCurrentExercises}
           onFinish={handleFinishWorkout}
+          currentUser={currentUser}          // passes currentUser as a prop to WorkoutScreen
+          currentLocation={currentLocation}  // passes currentLocation as a prop to WorkoutScreen
         />
       )}
     </div>
