@@ -38,7 +38,7 @@ export const WORKOUT_PRESETS = {
       createExercise("pb-2", "Seated Pec Deck"),
       createExercise("pb-3", "Dumbbell Shoulder Press"),
       createExercise("pb-4", "Hammer Curls"),
-      createExercise("pb-5", "V-Squats", "flame"),
+      createExercise("pb-5", "Hack Squat", "flame"),
     ]
   },
   pressBiceps2: {
@@ -46,21 +46,21 @@ export const WORKOUT_PRESETS = {
     exercises: [
       createExercise("pb2-1", "Barbell Benchpress"),
       createExercise("pb2-2", "Decline Benchpress"),
-      createExercise("pb2-3", "Chest Supported Lateral Raise"),
+      createExercise("pb2-3", "Incline Lateral Raises"),
       createExercise("pb2-4", "Dumbbell Supinated Curls"),
-      createExercise("pb2-5", "Reverse Grip Curls"),
+      createExercise("pb2-5", "EZ Bar Reverse Curls"),
     ]
   },
   armsDeltsOG: {
     title: "Arms / Delts OG",
     exercises: [
       createExercise("ado-1", "Cable Y Raises"),
-      createExercise("ado-2", "DB Lateral Raise"),
+      createExercise("ado-2", "DB Lateral Raises"),
       createExercise("ado-3", "EZ Bar Skullcrusher"),
       createExercise("ado-4", "EZ Bar Bicep Curl"),
       createExercise("ado-5", "Cable Overhead Tricep Extension"),
       createExercise("ado-6", "Hammer Curls"),
-      createExercise("ado-7", "INF Supinated Incline Curls"),
+      createExercise("ado-7", "Supinated Incline Curls"),
     ]
   },
   armsDeltsVJH: {
@@ -77,7 +77,7 @@ export const WORKOUT_PRESETS = {
   pullUpperBack: {
     title: "Pull (Upper Back Bias) + Triceps",
     exercises: [
-      createExercise("pub-1", "T-Bar Row Machine"),
+      createExercise("pub-1", "T-Bar Row"),
       createExercise("pub-2", "Face Pull"),
       createExercise("pub-3", "Calf Raises", "flame"),
       createExercise("pub-4", "EZ Bar Tricep Press"),
@@ -99,7 +99,8 @@ export const WORKOUT_PRESETS = {
       createExercise("lb-3", "Bulgarian Split Squat", "flame"),
       createExercise("lb-4", "Hamstring Curls"),
       createExercise("lb-5", "Calf Raises"),
-      createExercise("lb-6", "Ab/Adductor Machine"),
+      createExercise("lb-6", "Adductor Machine (Squeeze In)"),
+      createExercise("lb-7", "Abductor Machine (Spread Out)")
     ]
   },
 };

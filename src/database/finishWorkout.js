@@ -6,6 +6,15 @@ export const saveWorkoutToCloud = async (workoutMetadata, exercisesArray) => {
   try {
     console.log("Starting cloud save...");
 
+
+    // Guard Rail: Make sure all exercises have names before allowing the save to proceed.
+  const hasUnnamedExercises = exercises.some(ex => !ex.name || ex.name.trim() === "");
+  
+  if (hasUnnamedExercises) {
+    alert("Oops! Please select an exercise name for all your blank cards before finishing.");
+    return; // Stops the save!
+  }
+
     // 1. INSERT PARENT (WORKOUT)
     const { data: workoutData, error: workoutError } = await supabase
       .from('workouts')

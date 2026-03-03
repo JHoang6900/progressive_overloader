@@ -426,6 +426,10 @@ export function WorkoutScreen({
 
       // Loop through the active exercises
       for (const exercise of exercises) {
+
+// If it's a blank template row/unnamed exercise, skip the supabase call.
+if (!exercise.name || exercise.name === "") continue;
+
         // If we already fetched the history for this specific exercise card, skip it!
         if (newGhostData[exercise.id]) continue;
 
