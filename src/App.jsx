@@ -165,16 +165,26 @@ return (
       )}
 
       {/* ROUTE 3: The Active Workout (User is actively lifting) */}
-      {currentUser && isWorkoutActive && !isFinished && (
+      {/* 👇 Added !isEditing so this hides when the selector opens */}
+      {currentUser && isWorkoutActive && !isEditing && !isFinished && (
         <WorkoutScreen 
           exercises={currentExercises} 
-          onEdit={() => setIsPresetModalOpen(true)} 
+          onEdit={() => setIsEditing(true)} 
           onUpdateExercises={setCurrentExercises} 
           onFinish={handleFinishWorkout}
           currentUser={currentUser}       
           currentLocation={currentLocation}
-          // Add a way to cancel the workout and go back to the dashboard!
           onCancel={() => setIsWorkoutActive(false)} 
+        />
+      )}
+
+      {/* ROUTE 3.5: The Exercise Selector (User is adding/editing exercises) */}
+      {/* 👇 NEW: The dedicated route for your full-screen selector! */}
+      {currentUser && isWorkoutActive && isEditing && !isFinished && (
+        <ExerciseSelector 
+           exercises={currentExercises}  // Passes your current list
+          onSave={handleSave}                  // Uses your existing handleSave function!
+          onCancel={() => setIsEditing(false)} // Let them back out without saving
         />
       )}
 
@@ -187,6 +197,7 @@ return (
             setCurrentExercises([]); // Wipes the slate clean!
             setIsWorkoutActive(false); // Send them back to the dashboard
           }}
+          currentUser={currentUser}
         />
       )}
     </>

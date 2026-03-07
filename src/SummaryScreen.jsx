@@ -12,7 +12,7 @@ const getVolumeFlavor = (pounds) => {
   return "That's a Space Shuttle! 🚀";
 };
 
-export default function SummaryScreen({ exercises, onClose }) {
+export default function SummaryScreen({ exercises, onClose, currentUser }) {
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
 
   // Handle window resize for confetti
@@ -63,7 +63,7 @@ export default function SummaryScreen({ exercises, onClose }) {
               Workout<br/>
               <span className="text-emerald-500">Complete</span>
             </h1>
-            <p className="mt-2 font-medium text-zinc-500">Great job, JHoang!</p>
+            <p className="mt-2 font-medium text-zinc-500">Great job, {currentUser}!!</p>
           </div>
         </div>
 
