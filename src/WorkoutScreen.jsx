@@ -396,7 +396,8 @@ export function WorkoutScreen({
   onUpdateExercises,
   onFinish,
   currentUser,
-  currentLocation
+  currentLocation,
+  onCancel
 }) {
   const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
   // const [location, setLocation] = useState("MACU-M");
@@ -532,6 +533,7 @@ if (!exercise.name || exercise.name === "") continue;
         setDate={setDate}
         user={currentUser}           // Mapping currentUser -> user
         location={currentLocation}   // Mapping currentLocation -> location
+        onCancel={onCancel}
       />
       {/* Main Content */}
       <main className="px-4 py-6 pb-24">

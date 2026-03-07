@@ -48,7 +48,7 @@ const USER_OPTIONS = [
           <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-emerald-500/20 text-emerald-500">
             <Dumbbell className="w-8 h-8" />
           </div>
-          <h1 className="text-3xl font-black tracking-tight uppercase">Ready to Lift</h1>
+          <h1 className="text-3xl font-black tracking-tight uppercase">progressive overloader</h1>
           <p className="mt-2 text-zinc-500">Confirm your details to fetch your history.</p>
         </div>
 

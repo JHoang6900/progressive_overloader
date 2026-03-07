@@ -12,78 +12,20 @@ import { saveWorkoutToCloud } from "./database/finishWorkout";
 import { WORKOUT_PRESETS, BLANK_PRESET } from "./data/presets";
 
 import WelcomeScreen from "./WelcomeScreen";
+import DashboardScreen from "./DashboardScreen";
+import PresetScreen from "./PresetScreen";
 
 // Define the initial state of exercises here
-const INITIAL_DATA = [
-//  {
-//     id: "1",
-//     name: "Barbell Benchpress",
-//     icon: "dumbbell",
-//     targetReps: "8-10",
-//     sets: [
-//       { weight: "45+15lbs", reps: "5" },
-//       { weight: "45+15lbs", reps: "5" },
-//       { weight: "45+15lbs", reps: "5" },
-//       { weight: "45+15lbs", reps: "4" },
-//       { weight: "45+15lbs", reps: "4" },
-//     ],
-//     notes: "5x5 last 2 sets were 5x4",
-//   },
-//   {
-//     id: "2",
-//     name: "Pull-Ups",
-//     icon: "target",
-//     targetReps: "8-10",
-//     sets: [
-//       { weight: "Green", reps: "10", isGreen: true },
-//       { weight: "Green", reps: "5 | 3", isGreen: true },
-//       { weight: "Green", reps: "5 | 3", isGreen: true },
-//       { weight: "Green", reps: "5 | 3", isGreen: true },
-//     ],
-//   },
-//   {
-//     id: "3",
-//     name: "Incline Dumbbell Curl",
-//     icon: "dumbbell",
-//     targetReps: "8-10",
-//     sets: [
-//       { weight: "20lbs", reps: "10" },
-//       { weight: "20lbs", reps: "5" },
-//       { weight: "15lbs", reps: "10" },
-//       { weight: "15lbs", reps: "10" },
-//     ],
-//   },
-//   {
-//     id: "4",
-//     name: "Leg Extensions",
-//     icon: "flame",
-//     targetReps: "7-9",
-//     sets: [
-//       { weight: "85lbs", reps: "10", isRed: true },
-//       { weight: "100lbs", reps: "10", isRed: true },
-//       { weight: "100lbs", reps: "10", isRed: true },
-//       { weight: "100lbs", reps: "10", isRed: true },
-//     ],
-//   },
-//   {
-//     id: "5",
-//     name: "Spread Out",
-//     icon: "dumbbell",
-//     targetReps: "8-10",
-//     sets: [
-//       { weight: "75lbs", reps: "7" },
-//       { weight: "75lbs", reps: "10" },
-//       { weight: "75lbs", reps: "10" },
-//       { weight: "75lbs", reps: "10" },
-//     ],
-//   },
-];
+const INITIAL_DATA = [];
 
 export default function App() {
 
 
   const [currentUser, setCurrentUser] = useState("");
   const [currentLocation, setCurrentLocation] = useState("");
+
+  const [isWorkoutActive, setIsWorkoutActive] = useState(false);
+  const [isSelectingPreset, setIsSelectingPreset] = useState(false)
 
 
   // 1. The "Single Source of Truth" for data
@@ -118,7 +60,7 @@ export default function App() {
 
   // Send the data to Supabase and then show the Summary Screen if successful
   const handleFinishWorkout = async (workoutMetadata) => {
-    {
+    
           // Guard Rail: Make sure all exercises have names before allowing the save to proceed.
   const hasUnnamedExercises = currentExercises.some(ex => !ex.name || ex.name.trim() === "");
   
@@ -136,7 +78,7 @@ export default function App() {
         );
         return;
       }
-    }
+    
 
     // 2. CHECK FOR ACTUAL DATA (No Ghost Rows!) CHECK FOR EMPTY SETS: Make sure at least one exercise has a set with weight or reps filled in.
     const hasValidSets = currentExercises.some((ex) => {
@@ -177,116 +119,76 @@ export default function App() {
       alert("Oops! There was an error saving your workout to the cloud.");
     }
   };
-
-  return (
-    <div className="min-h-screen mx-auto bg-zinc-950 text-zinc-50">
-
-
-
-{!currentUser ? (
+return (
+    <>
+      {/* ROUTE 1: The Gatekeeper (No user selected yet) */}
+      {!currentUser && (
         <WelcomeScreen 
           onStart={(name, location) => {
             setCurrentUser(name);
             setCurrentLocation(location);
           }} 
         />
+      )}
 
-         ) : isFinished ? (
-        // 1. SHOW SUMMARY SCREEN
+      {/* ROUTE 2: The Dashboard (User selected, but hasn't started lifting) */}
+      {currentUser && !isSelectingPreset && !isWorkoutActive && !isFinished && (
+        <DashboardScreen 
+          currentUser={currentUser}
+          // When they click the '+', we flip the traffic cop to true!
+         onStartWorkout={() => setIsSelectingPreset(true)}
+          // If they want to change users, we clear the name to send them back to Welcome
+          onBack={() => {
+            setCurrentUser("");
+            setCurrentLocation("");
+          }}
+        />
+      )}
+
+      {/* ROUTE 2.5: The Preset Selection Screen */}
+      {currentUser && isSelectingPreset && !isWorkoutActive && !isFinished && (
+        <PresetScreen
+          currentUser={currentUser} 
+          onStartPreset={(freshWorkout) => {
+            setCurrentExercises(freshWorkout);
+            setIsSelectingPreset(false);
+            setIsWorkoutActive(true);
+          }}
+          onStartEmpty={() => {
+            setCurrentExercises([]);
+            setIsSelectingPreset(false);
+            setIsWorkoutActive(true);
+            setIsEditing(true); // Sends them straight to edit mode as you intended!
+          }}
+          onCancel={() => setIsSelectingPreset(false)}
+        />
+      )}
+
+      {/* ROUTE 3: The Active Workout (User is actively lifting) */}
+      {currentUser && isWorkoutActive && !isFinished && (
+        <WorkoutScreen 
+          exercises={currentExercises} 
+          onEdit={() => setIsPresetModalOpen(true)} 
+          onUpdateExercises={setCurrentExercises} 
+          onFinish={handleFinishWorkout}
+          currentUser={currentUser}       
+          currentLocation={currentLocation}
+          // Add a way to cancel the workout and go back to the dashboard!
+          onCancel={() => setIsWorkoutActive(false)} 
+        />
+      )}
+
+      {/* ROUTE 4: The Finished Workout (User has finished lifting) */}
+      {currentUser && isFinished && (
         <SummaryScreen
           exercises={currentExercises}
           onClose={() => {
             setIsFinished(false);
             setCurrentExercises([]); // Wipes the slate clean!
+            setIsWorkoutActive(false); // Send them back to the dashboard
           }}
         />
-      ) : isEditing ? (
-        // 2. SHOW EDIT SCREEN
-        <ExerciseSelector
-          exercises={currentExercises}
-          onSave={handleSave}
-          onCancel={() => setIsEditing(false)}
-        />
-      ) : currentExercises.length === 0 ? (
-        // 3. SHOW START SCREEN (Because the workout is empty)
-        <div className="flex flex-col justify-center h-screen gap-6 p-6">
-          <h1 className="mb-4 text-3xl font-bold text-center">
-            Ready to lift?
-          </h1>
-
-          <div className="flex flex-col gap-3">
-            <select
-              className="w-full p-4 text-lg text-center border outline-none rounded-xl bg-zinc-900 border-zinc-800 focus:ring-2 focus:ring-emerald-500"
-              value={selectedPresetKey}
-              onChange={(e) => setSelectedPresetKey(e.target.value)}
-            >
-              <option value="" disabled>
-                Choose a workout preset...
-              </option>
-              {/* This loops through your presets object and generates the dropdown options! */}
-              {Object.entries(WORKOUT_PRESETS).map(([key, preset]) => (
-                <option key={key} value={key}>
-                  {preset.title}
-                </option>
-              ))}
-            </select>
-
-            <button
-              onClick={() => {
-                if (selectedPresetKey) {
-                  // The Deep Copy! Clones the template so the original stays perfectly clean
-                  const freshWorkout = structuredClone(
-                    WORKOUT_PRESETS[selectedPresetKey].exercises,
-                  );
-                  setCurrentExercises(freshWorkout);
-                  setSelectedPresetKey(""); // Resets the dropdown for next time
-                }
-              }}
-              disabled={!selectedPresetKey}
-              className="w-full text-lg font-semibold transition-colors h-14 bg-emerald-500 hover:bg-emerald-400 disabled:bg-zinc-800 disabled:text-zinc-600 text-zinc-950 rounded-xl"
-            >
-              Start Preset
-            </button>
-          </div>
-
-          <div className="relative flex items-center py-4">
-            <div className="flex-grow border-t border-zinc-800"></div>
-            <span className="flex-shrink-0 mx-4 text-sm text-zinc-500">or</span>
-            <div className="flex-grow border-t border-zinc-800"></div>
-          </div>
-
-          <button
-            onClick={() => {
-              // creates a fresh new variable that clones the blank presets.
-              // const freshBlankWorkout = structuredClone(
-              //   BLANK_PRESET.blankPreset.exercises,
-              // );
-
-              // 2. sets the state
-              setCurrentExercises([]);
-
-              // 3. reset the dropdown in case they had something selected
-              setSelectedPresetKey("");
-
-              // 4. send user straight to the Exercise Selector to fill in those blank exercises
-              setIsEditing(true);
-            }}
-            className="w-full text-lg font-semibold text-white transition-colors border h-14 bg-zinc-900 border-zinc-800 hover:bg-zinc-800 rounded-xl"
-          >
-            Start Empty Workout
-          </button>
-        </div>
-      ) : (
-        // 4. SHOW WORKOUT SCREEN (Active Workout)
-        <WorkoutScreen
-          exercises={currentExercises}
-          onEdit={() => setIsEditing(true)}
-          onUpdateExercises={setCurrentExercises}
-          onFinish={handleFinishWorkout}
-          currentUser={currentUser}          // passes currentUser as a prop to WorkoutScreen
-          currentLocation={currentLocation}  // passes currentLocation as a prop to WorkoutScreen
-        />
       )}
-    </div>
+    </>
   );
 }

@@ -1,17 +1,23 @@
-// src/database/workoutService.js
 import { supabase } from '../supabaseClient'; 
 import { calculateWeightValue } from '../lib/utils';
 
 export const saveWorkoutToCloud = async (workoutMetadata, exercisesArray) => {
+  // Only ONE try block to start the process
   try {
     console.log("Starting cloud save...");
 
-    // 1. INSERT PARENT (WORKOUT)
+    // 1. Guardrail announces if missing data
+    if (!workoutMetadata?.location || !workoutMetadata?.userName) {
+      throw new Error("Missing User or Location data! Aborting save to prevent dirty data.");
+    }
+
+    // 2. INSERT PARENT (WORKOUT)
     const { data: workoutData, error: workoutError } = await supabase
       .from('workouts')
       .insert([{
-        location: workoutMetadata?.location || 'Local Gym',
-        user_name: workoutMetadata?.userName || 'Default User',
+        // Strict mapping only!
+        location: workoutMetadata.location,
+        user_name: workoutMetadata.userName,
       }])
       .select()
       .single();
@@ -19,7 +25,7 @@ export const saveWorkoutToCloud = async (workoutMetadata, exercisesArray) => {
     if (workoutError) throw workoutError;
     const newWorkoutId = workoutData.id;
 
-    // 2. INSERT CHILDREN (EXERCISES)
+    // 3. INSERT CHILDREN (EXERCISES)
     for (const exercise of exercisesArray) {
       const { data: exerciseData, error: exerciseError } = await supabase
         .from('exercises')
@@ -36,7 +42,7 @@ export const saveWorkoutToCloud = async (workoutMetadata, exercisesArray) => {
       if (exerciseError) throw exerciseError;
       const newExerciseId = exerciseData.id;
 
-      // 3. INSERT GRANDCHILDREN (SETS)
+      // 4. INSERT GRANDCHILDREN (SETS)
       const setsToInsert = exercise.sets.map((set, index) => ({
         exercise_id: newExerciseId,
         set_order: index + 1, 
@@ -58,6 +64,7 @@ export const saveWorkoutToCloud = async (workoutMetadata, exercisesArray) => {
     console.log("✅ Workout completely saved to the cloud!");
     return true; 
 
+  // ONE catch block to catch any errors from above
   } catch (error) {
     console.error("❌ Error saving workout:", error.message);
     return false; 

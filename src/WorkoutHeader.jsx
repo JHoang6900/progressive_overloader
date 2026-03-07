@@ -129,8 +129,9 @@ function WorkoutDatePicker({ date, setDate }) {
 export function WorkoutHeader({ onEdit 
   , location, setLocation
   , user, setUser
-  , date, setDate
+  , date, setDate, onCancel
 }) {
+  
   // const [location, setLocation] = useState("MACU-M");
   // const [user, setUser] = useState("JHoang");
   // const [date, setDate] = useState(new Date()); 
@@ -144,7 +145,10 @@ export function WorkoutHeader({ onEdit
     >
       {/* Top Row: Navigation & Actions */}
       <div className="flex items-center justify-between px-4 py-3">
-        <button className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60">
+        <button 
+        className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60"
+        onClick={onCancel}>
+        
           <ChevronLeftIcon className="w-5 h-5" />
         </button>
         <div className="text-center">
