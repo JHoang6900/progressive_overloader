@@ -120,7 +120,7 @@ function ExerciseCard({ exercise, index, onUpdateName, onUpdateRepRange, onDelet
               <Trash2Icon className="w-5 h-5" />
             </button>
 
-            <ChevronDownIcon className="w-5 h-5 text-zinc-500" />
+            {/* <ChevronDownIcon className="w-5 h-5 text-zinc-500" /> */}
           </div>
         </div>
       </div>
@@ -176,7 +176,10 @@ export function ExerciseSelector({ exercises, onSave, onCancel }) {
       >
         <div className="flex items-center justify-between px-4 py-3">
           <button className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60">
-            <ChevronLeftIcon className="w-5 h-5" />
+            <ChevronLeftIcon 
+            className="w-5 h-5" 
+            onClick={onCancel}
+            />
           </button>
           <div className="text-center">
             <h1 className="text-lg font-semibold text-white">
