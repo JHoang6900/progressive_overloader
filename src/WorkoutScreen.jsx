@@ -68,14 +68,10 @@ function ExerciseCard({
   const completedSets = exercise.sets.length;
   const totalSets = exercise.sets.length;
 
-
-
-
-// 🌟 AUTO-GREEN CHECKER 🌟
+  // 🌟 AUTO-GREEN CHECKER 🌟
   useEffect(() => {
     // Loop through all the sets for this specific exercise
     exercise.sets.forEach((set, setIndex) => {
-      
       // Check if both fields have at least one character typed in them
       const hasWeight = set.weight && set.weight.toString().trim() !== "";
       const hasReps = set.reps && set.reps.toString().trim() !== "";
@@ -84,7 +80,7 @@ function ExerciseCard({
       if (hasWeight && hasReps && !set.completed) {
         onSetChange(exercise.id, setIndex, "completed", true);
       }
-      
+
       // Condition 2: If they delete a value, and it IS green... uncheck it automatically!
       else if ((!hasWeight || !hasReps) && set.completed) {
         onSetChange(exercise.id, setIndex, "completed", false);
@@ -92,20 +88,22 @@ function ExerciseCard({
     });
   }, [exercise.sets, exercise.id, onSetChange]); // the watcher runs every time a set changes
 
-
-return (
+  return (
     <motion.div // 👈 1. Changed from motion.button to motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.08, duration: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
+      transition={{
+        delay: index * 0.08,
+        duration: 0.4,
+        ease: [0.25, 0.46, 0.45, 0.94],
+      }}
     >
       <div className="p-4 mb-3 border bg-zinc-900/60 backdrop-blur-xl border-zinc-800/50 rounded-xl">
-        
         {/* 👇 2. THE NEW CLICKABLE HEADER (Only this part toggles the card!) */}
         <motion.div
           onClick={() => setIsExpanded(!isExpanded)}
           whileTap={{ scale: 0.98 }}
-          className="w-full text-left cursor-pointer" 
+          className="w-full text-left cursor-pointer"
         >
           {/* Card Header (Icon, Title, Chevron) */}
           <div className="flex items-center justify-between">
@@ -145,11 +143,15 @@ return (
               className="h-full bg-gradient-to-r from-zinc-500 to-zinc-400"
               initial={{ width: 0 }}
               animate={{ width: `${(completedSets / totalSets) * 100}%` }}
-              transition={{ delay: index * 0.08 + 0.3, duration: 0.6, ease: "easeOut" }}
+              transition={{
+                delay: index * 0.08 + 0.3,
+                duration: 0.6,
+                ease: "easeOut",
+              }}
             />
           </div>
-        </motion.div> {/* 👈 End of clickable header */}
-
+        </motion.div>{" "}
+        {/* 👈 End of clickable header */}
         {/* 👇 3. EXPANDED CONTENT LIVES OUTSIDE THE TOGGLE NOW */}
         <AnimatePresence>
           {isExpanded && (
@@ -190,43 +192,82 @@ return (
                         <button
                           type="button"
                           onClick={(e) => {
-                            if (!set.completed && !set.weight && !set.reps) return;
-                            onSetChange(exercise.id, setIndex, "completed", !set.completed);
+                            if (!set.completed && !set.weight && !set.reps)
+                              return;
+                            onSetChange(
+                              exercise.id,
+                              setIndex,
+                              "completed",
+                              !set.completed,
+                            );
                           }}
                           className="p-4 mr-1 -ml-4 outline-none cursor-pointer group"
                         >
                           <div
                             className={`flex items-center justify-center w-6 h-6 shrink-0 text-xs font-medium rounded-full transition-colors ${
-                              set.completed ? "bg-emerald-500 text-zinc-900" : "bg-zinc-700/50 text-zinc-400 group-hover:bg-zinc-600/50"
+                              set.completed
+                                ? "bg-emerald-500 text-zinc-900"
+                                : "bg-zinc-700/50 text-zinc-400 group-hover:bg-zinc-600/50"
                             }`}
                           >
-                            {set.completed ? <CircleCheckBig className="w-3.5 h-3.5" /> : setIndex + 1}
+                            {set.completed ? (
+                              <CircleCheckBig className="w-3.5 h-3.5" />
+                            ) : (
+                              setIndex + 1
+                            )}
                           </div>
                         </button>
 
                         {/* 2. THE WEIGHT INPUT */}
                         <div className="flex items-center flex-1 gap-3 px-3 py-2 mr-4">
-                          <div className={`px-3 py-2 rounded-lg border transition-colors ${set.completed ? "bg-emerald-800/40 border-emerald-500/30" : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"}`}>
+                          <div
+                            className={`px-3 py-2 rounded-lg border transition-colors ${set.completed ? "bg-emerald-800/40 border-emerald-500/30" : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"}`}
+                          >
                             <WorkoutInput
                               value={set.weight}
-                              onChange={(value) => onSetChange(exercise.id, setIndex, "weight", value)}
-                              placeholder={previousSet ? previousSet.weight_display : "Weight"}
+                              onChange={(value) =>
+                                onSetChange(
+                                  exercise.id,
+                                  setIndex,
+                                  "weight",
+                                  value,
+                                )
+                              }
+                              placeholder={
+                                previousSet
+                                  ? previousSet.weight_display
+                                  : "Weight"
+                              }
                             />
                           </div>
-                          <span className={`text-xs font-medium ${set.completed ? "text-emerald-500" : "text-zinc-500"}`}>lbs</span>
+                          <span
+                            className={`text-xs font-medium ${set.completed ? "text-emerald-500" : "text-zinc-500"}`}
+                          >
+                            lbs
+                          </span>
                         </div>
 
                         {/* 3. THE REPS INPUT */}
                         <div className="flex items-center w-20 gap-2 shrink-0">
-                          <div className={`flex-1 px-2 py-2 rounded-lg border transition-colors ${set.completed ? "bg-emerald-800/40 border-emerald-500/30" : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"}`}>
+                          <div
+                            className={`flex-1 px-2 py-2 rounded-lg border transition-colors ${set.completed ? "bg-emerald-800/40 border-emerald-500/30" : "bg-zinc-800/30 border-transparent hover:bg-zinc-800/50"}`}
+                          >
                             <WorkoutInput
                               value={set.reps}
-                              onChange={(val) => onSetChange(exercise.id, setIndex, "reps", val)}
-                              placeholder={previousSet ? previousSet.reps : "Reps"}
+                              onChange={(val) =>
+                                onSetChange(exercise.id, setIndex, "reps", val)
+                              }
+                              placeholder={
+                                previousSet ? previousSet.reps : "Reps"
+                              }
                               align="center"
                             />
                           </div>
-                          <span className={`text-xs font-medium shrink-0 ${set.completed ? "text-emerald-500" : "text-zinc-500"}`}>reps</span>
+                          <span
+                            className={`text-xs font-medium shrink-0 ${set.completed ? "text-emerald-500" : "text-zinc-500"}`}
+                          >
+                            reps
+                          </span>
                         </div>
 
                         {/* 4. THE TRASH BUTTON */}
@@ -289,12 +330,13 @@ export function WorkoutScreen({
   onFinish,
   currentUser,
   currentLocation,
-  onCancel
+  onCancel,
 }) {
   const totalSets = exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
   // const [location, setLocation] = useState("MACU-M");
   // const [user, setUser] = useState("JHoang");
   const [date, setDate] = useState(new Date());
+  const [isSaving, setIsSaving] = useState(false);
 
   // const getGhostData = (exerciseId) => {
   //   const locationHistory = EXERCISE_HISTORY[location];
@@ -321,9 +363,8 @@ export function WorkoutScreen({
 
       // Loop through the active exercises
       for (const exercise of exercises) {
-
-// If it's a blank template row/unnamed exercise, skip the supabase call.
-if (!exercise.name || exercise.name === "") continue;
+        // If it's a blank template row/unnamed exercise, skip the supabase call.
+        if (!exercise.name || exercise.name === "") continue;
 
         // If we already fetched the history for this specific exercise card, skip it!
         if (newGhostData[exercise.id]) continue;
@@ -334,7 +375,7 @@ if (!exercise.name || exercise.name === "") continue;
         );
         const exerciseType = exerciseDef?.type || "freeweight"; // Fallback just in case
 
-        // Fetch from Supabase! 
+        // Fetch from Supabase!
         const history = await fetchPreviousSets(
           currentUser, // Your User ID
           exercise.name, // e.g., "Barbell Benchpress"
@@ -357,7 +398,7 @@ if (!exercise.name || exercise.name === "") continue;
 
     loadGhostSets();
   }, [exercises]); // This runs every time the 'exercises' array changes
-  
+
   // TODO: [exercises, currentUser, currentLocation] - we should also re-run if the user or location changes, to ensure the ghost data is always relevant to who's working out and where they are.
 
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -423,8 +464,8 @@ if (!exercise.name || exercise.name === "") continue;
         // setLocation={setLocation}
         // setUser={setUser}
         setDate={setDate}
-        user={currentUser}           // Mapping currentUser -> user
-        location={currentLocation}   // Mapping currentLocation -> location
+        user={currentUser} // Mapping currentUser -> user
+        location={currentLocation} // Mapping currentLocation -> location
         onCancel={onCancel}
       />
       {/* Main Content */}
@@ -508,27 +549,48 @@ if (!exercise.name || exercise.name === "") continue;
               <span className="text-[10px] font-medium mt-0.5">Add</span>
             </button>
 
+
+
             {/* 2. FINISH WORKOUT BUTTON (Big, Green) */}
             <button
+              // 👇 1. Disable the HTML button if we are in cooldown
+              disabled={isSaving}
               onClick={function () {
-                // 1. Package the local state into our metadata object
+                // 👇 2. Stop them if they managed to click again
+                if (isSaving) return;
+
+                // 👇 3. Lock the button!
+                setIsSaving(true);
+
+                // Unlock it after 2.5 seconds (in case a guardrail stops the save and they need to try again)
+                setTimeout(() => setIsSaving(false), 2500);
+
                 const metadata = {
                   location: currentLocation,
                   userName: currentUser,
                   date: date,
                 };
 
-                // // 2. Call the saveWorkoutToCloud function
-                // saveWorkoutToCloud(metadata, exercises);
-
                 onFinish(metadata);
                 console.log("Finish Workout Clicked!");
               }}
-              className="flex-1 text-lg font-semibold tracking-wide transition-colors shadow-lg h-14 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-xl shadow-emerald-500/20"
+              // 👇 4. Change the colors if it's disabled so the user knows it's working
+              className={`flex-1 text-lg font-semibold tracking-wide transition-colors shadow-lg h-14 rounded-xl shadow-emerald-500/20 ${
+                isSaving
+                  ? "bg-emerald-500/50 text-zinc-950/50 cursor-not-allowed"
+                  : "bg-emerald-500 hover:bg-emerald-400 text-zinc-950"
+              }`}
             >
               <div className="flex items-center justify-center">
-                <CircleCheckBig className="w-8 h-8" />
-                <span className="ml-2">Done</span>
+                {/* 👇 5. Swap the text so they know things are happening */}
+                {isSaving ? (
+                  <span className="animate-pulse">Saving...</span>
+                ) : (
+                  <>
+                    <CircleCheckBig className="w-8 h-8" />
+                    <span className="ml-2">Done</span>
+                  </>
+                )}
               </div>
             </button>
           </div>
