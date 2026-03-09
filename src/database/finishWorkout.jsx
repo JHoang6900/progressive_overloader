@@ -5,6 +5,9 @@ import { calculatePRs } from '../utils/calculatePRs';
 
 export const saveWorkoutToCloud = async (workoutMetadata, exercisesArray) => {
   try {
+
+    const earnedPRs = [];
+
     // 1. Guardrail
     if (!workoutMetadata?.location || !workoutMetadata?.userName) {
       throw new Error("Missing User or Location data!");
@@ -47,6 +50,19 @@ export const saveWorkoutToCloud = async (workoutMetadata, exercisesArray) => {
 
       const evaluatedSets = calculatePRs(exercise.sets, maxWeight, maxReps);
 
+      // Collect any new PRs for the summary screen
+      evaluatedSets.forEach(set => {
+        if (set.is_pr) {
+          earnedPRs.push({
+            exerciseName: exercise.name,
+            weight: set.weight,
+            reps: set.reps
+          });
+        }
+      });
+
+
+
       // 4. Insert sets
       const setsToInsert = evaluatedSets.map((set, index) => ({
         exercise_id: newExerciseId,
@@ -67,11 +83,13 @@ export const saveWorkoutToCloud = async (workoutMetadata, exercisesArray) => {
       }
     }
 
-    console.log("✅ Workout completely saved to the cloud!");
-    return true;
+console.log("✅ Workout saved! PRs earned:", earnedPRs);
+    
+    // 👇 3. Return the bucket of trophies along with the success message!
+    return { success: true, prs: earnedPRs };
 
   } catch (error) {
     console.error("❌ Error saving workout:", error.message);
-    return false;
+    return { success: false, prs: [] };
   }
 };

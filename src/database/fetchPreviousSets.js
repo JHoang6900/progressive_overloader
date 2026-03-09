@@ -12,7 +12,7 @@ export const fetchPreviousSets = async (userName, exerciseName, exerciseType, cu
         exercise_name,
         created_at,
         workouts!inner(user_name, location), 
-        sets(set_order, weight_display, weight_value, reps)
+        sets(set_order, weight_display, weight_value, reps, is_pr)
       `)
       .eq('exercise_name', exerciseName)
       .eq('workouts.user_name', userName)
@@ -33,6 +33,15 @@ export const fetchPreviousSets = async (userName, exerciseName, exerciseType, cu
 
     if (error) throw error;
     
+    // 👇 2. TRANSLATE THE DATA FOR THE FRONTEND
+    if (data && data.sets) {
+      return data.sets.map(set => ({
+        ...set,
+        isPR: set.is_pr // Maps the database snake_case to UI camelCase!
+      }));
+    }
+
+
     // 4. Return just the array of sets to be used as our ghost placeholders
     return data?.sets || []; 
 
@@ -43,6 +52,13 @@ export const fetchPreviousSets = async (userName, exerciseName, exerciseType, cu
     return []; 
   }
 };
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 
 
 // {* A helper function to fetch PRs  for an exercise *}
