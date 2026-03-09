@@ -90,17 +90,29 @@ export default function DashboardScreen({ currentUser, onStartWorkout, onBack })
                 transition={{ delay: index * 0.1 }} // Staggers the card animations!
                 className="p-4 transition-colors border bg-zinc-900/50 rounded-2xl border-zinc-800/50 hover:border-zinc-700"
               >
-                {/* Card Header: Date & Location */}
-                <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800">
-                  <div className="flex items-center gap-2 text-sm font-medium text-white">
-                    <Calendar className="w-4 h-4 text-emerald-500" />
-                    {format(parseISO(workout.created_at), "EEEE, MMM do")}
-                  </div>
-                  <div className="flex items-center gap-1.5 text-xs text-zinc-500">
-                    <MapPin className="w-3.5 h-3.5" />
-                    {workout.location}
-                  </div>
-                </div>
+               {/* Card Header: Date & Location */}
+<div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800">
+  <div className="flex items-center gap-2 text-sm font-medium text-white">
+    <Calendar className="w-4 h-4 text-emerald-500" />
+    {format(parseISO(workout.created_at), "EEEE, MMM do")}
+  </div>
+
+  {/* 👇 NEW: Combined Badge & Location Container */}
+  <div className="flex items-center gap-3">
+    {/* 🏆 THE PR BADGE */}
+    {workout.hasPR && (
+      <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-yellow-500/10 border border-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.05)]">
+        <span className="text-[10px]">🏆</span>
+        <span className="text-[10px] font-bold tracking-tight text-yellow-500 uppercase">PR</span>
+      </div>
+    )}
+
+    <div className="flex items-center gap-1.5 text-xs text-zinc-500">
+      <MapPin className="w-3.5 h-3.5" />
+      {workout.location}
+    </div>
+  </div>
+</div>
 
                 {/* Card Body: Exercise Summary */}
                 <div className="space-y-2">
