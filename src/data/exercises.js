@@ -62,6 +62,8 @@ export const ALL_EXERCISES = [
   { value: "Dips", label: "Dips", type: "bodyweight" },
   { value: "Bayesian Cable Curls", label: "Bayesian Cable Curls", type: "cable" },
   { value: "Supinated Incline Curls", label: "Supinated Incline Curls", type: "freeweight"},
+  { value: "Test Squat 999", label: "Test Squat 999", type: "freeweight"},
+  { value: "Test Cable 999", label: "Test Cable 999", type: "cable"},
 ];
 
 

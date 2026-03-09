@@ -12,7 +12,7 @@ const getVolumeFlavor = (pounds) => {
   return "That's a Space Shuttle! 🚀";
 };
 
-export default function SummaryScreen({ exercises, onClose, currentUser }) {
+export default function SummaryScreen({ exercises, onClose, currentUser, recentPRs }) {
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
 
   // Handle window resize for confetti
@@ -58,6 +58,8 @@ export default function SummaryScreen({ exercises, onClose, currentUser }) {
             <Trophy className="w-10 h-10 drop-shadow-2xl" />
           </motion.div>
           
+
+
           <div>
             <h1 className="text-4xl italic font-black tracking-tighter text-white uppercase drop-shadow-2xl">
               Workout<br/>
@@ -66,6 +68,26 @@ export default function SummaryScreen({ exercises, onClose, currentUser }) {
             <p className="mt-2 font-medium text-zinc-500">Great job, {currentUser}!!</p>
           </div>
         </div>
+
+          {/* 🏆 THE TROPHY ROOM 🏆 */}
+        {/* The && means this entire box is completely invisible if they didn't hit any PRs */}
+        {recentPRs && recentPRs.length > 0 && (
+          <div className="p-4 mt-6 border bg-yellow-500/10 border-yellow-500/30 rounded-xl shadow-[0_0_15px_rgba(234,179,8,0.1)]">
+            <h3 className="flex items-center gap-2 mb-3 text-lg font-bold text-yellow-500">
+              <span>🏆</span> New Personal Best!
+            </h3>
+            <ul className="space-y-3">
+              {recentPRs.map((pr, index) => (
+                <li key={index} className="flex items-center justify-between text-sm">
+                  <span className="font-medium text-zinc-200">{pr.exerciseName}</span>
+                  <span className="font-mono font-semibold text-yellow-500/90">
+                    {pr.weight} lbs × {pr.reps}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {/* HERO STAT: VOLUME & FLAVOR */}
         <motion.div 

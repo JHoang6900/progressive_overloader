@@ -33,6 +33,9 @@ export default function App() {
   const [isEditing, setIsEditing] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
 
+  // State to hold trophies between the Workout and Summary screens
+  const [recentPRs, setRecentPRs] = useState([]);
+
   // Function to handle saving changes from ExerciseSelector
   const handleSave = (updatedExercises) => {
     setCurrentExercises(updatedExercises); // Update the master list
@@ -64,6 +67,8 @@ export default function App() {
     // 👇 STRICT MODE: A row is a problem if it is missing weight OR missing reps.
     const hasProblemRow = (ex) =>
       ex.sets?.some((set) => !set.weight || !set.reps);
+
+
 
     // Guardrail 1: Empty Gym Floor
     if (!currentExercises || currentExercises.length === 0) {
@@ -122,13 +127,18 @@ export default function App() {
     // Extra Last Resort Guardrail: The payload scrubber (just in case! -- theoretically shouldn't ever need to do any work because of the above checks, but it's good to have this safety net to prevent dirty data from sneaking into the database)
     const scrubbedExercises = currentExercises.filter(hasAnySets);
 
-    const isSaved = await saveWorkoutToCloud(
+// 👇 1. Let's call the package 'result' instead of 'isSaved'
+    const result = await saveWorkoutToCloud(
       { userName: currentUser, location: currentLocation },
       scrubbedExercises,
     );
 
-    if (isSaved) {
-      setIsFinished(true);
+    // 👇 2. Look inside the package for 'success'
+    if (result.success) {
+      // 👇 3. Look inside the package for 'prs' and save them to App.jsx's state!
+      setRecentPRs(result.prs);
+      
+      setIsFinished(true); 
     } else {
       alert("Oops! There was an error saving your workout to the cloud.");
     }
@@ -212,6 +222,7 @@ export default function App() {
             setIsWorkoutActive(false); // Send them back to the dashboard
           }}
           currentUser={currentUser}
+          recentPRs={recentPRs} // Pass the recently earned PRs to the SummaryScreen
         />
       )}
     </>
