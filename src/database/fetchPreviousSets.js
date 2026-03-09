@@ -62,9 +62,10 @@ export const fetchPreviousSets = async (userName, exerciseName, exerciseType, cu
 
 
 // {* A helper function to fetch PRs  for an exercise *}
-export const fetchExercisePRs = async (currentUser, exerciseName) => {
+export const fetchExercisePRs = async (currentUser, exerciseName, exerciseType, currentLocation) => {
   try {
-    const { data, error } = await supabase
+    // 1. Start the chain (Notice there is NO 'await' here!)
+    let query = supabase
       .from('sets')
       .select(`
         weight_value,
@@ -72,30 +73,33 @@ export const fetchExercisePRs = async (currentUser, exerciseName) => {
         exercises!inner (
           exercise_name,
           workouts!inner (
-            user_name
+            user_name,
+            location
           )
         )
       `)
-      // 1. Only look at sets that were actually completed
       .eq('completed', true)
-      // 2. Filter by the parent table (exercises)
       .eq('exercises.exercise_name', exerciseName)
-      // 3. Filter by the grandparent table (workouts)
-      .eq('exercises.workouts.user_name', currentUser)
-      // 4. Sort by the heaviest weight, then the most reps
+      .eq('exercises.workouts.user_name', currentUser);
+
+    // 2. Interrupt the chain to conditionally add the gym-specific filter!
+    const locationDependentTypes = ['machine', 'cable']; 
+    if (locationDependentTypes.includes(exerciseType)) {
+      query = query.eq('exercises.workouts.location', currentLocation);
+    }
+
+    // 3. NOW we finish the chain and actually execute it by adding 'await'
+    const { data, error } = await query
       .order('weight_value', { ascending: false })
       .order('reps', { ascending: false })
-      // 5. Give us just the all-time best record
       .limit(1)
-      .maybeSingle(); // Use maybeSingle() instead of single() so it doesn't throw an error if no PR exists
+      .maybeSingle();
 
     if (error) {
       console.error("Error fetching PRs for", exerciseName, error);
       return { maxWeight: 0, maxReps: 0 };
     }
 
-    // If we found a glorious PR, return the numbers!
-    // Notice we are using your 'weight_value' number column, which is perfect for math!
     if (data) {
       return { 
         maxWeight: Number(data.weight_value) || 0, 
@@ -103,7 +107,6 @@ export const fetchExercisePRs = async (currentUser, exerciseName) => {
       };
     }
 
-    // If you've never done it before, the numbers to beat are 0
     return { maxWeight: 0, maxReps: 0 };
 
   } catch (error) {

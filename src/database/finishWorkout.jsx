@@ -42,12 +42,14 @@ export const saveWorkoutToCloud = async (workoutMetadata, exercisesArray) => {
       if (exerciseError) throw exerciseError;
       const newExerciseId = exerciseData.id;
 
-      // 3.5 PR Intercept
+    // 3.5 PR Intercept
+      // 👇 Update this call to pass the type and location!
       const { maxWeight, maxReps } = await fetchExercisePRs(
         workoutMetadata.userName,
-        exercise.name
+        exercise.name,
+        exercise.type,            // cable/machines are location dependent, freeweights/bodyweight are not
+        workoutMetadata.location  // needed to determine if we should apply the location filter when fetching PRs
       );
-
       const evaluatedSets = calculatePRs(exercise.sets, maxWeight, maxReps);
 
       // Collect any new PRs for the summary screen

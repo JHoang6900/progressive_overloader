@@ -21,8 +21,6 @@ import {
   Trash2Icon,
 } from "lucide-react";
 
-
-
 // switch function for exercise icons
 function ExerciseIcon({ type }) {
   const iconClass = "w-5 h-5";
@@ -38,7 +36,13 @@ function ExerciseIcon({ type }) {
   }
 }
 
-function ExerciseCard({ exercise, index, onUpdateName, onUpdateRepRange, onDelete }) {
+function ExerciseCard({
+  exercise,
+  index,
+  onUpdateName,
+  onUpdateRepRange,
+  onDelete,
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const completedSets = exercise.sets.length;
   const totalSets = exercise.sets.length;
@@ -65,24 +69,33 @@ function ExerciseCard({ exercise, index, onUpdateName, onUpdateRepRange, onDelet
                   // supposedly .tolowerCase() is needed for matching in Combobox
                   value={exercise.name.toLowerCase()}
                   // FIX B: Call the Parent's function, not a local setter
-                 onSelect={(newName) => {
+                  onSelect={(newName) => {
                     // 1. Safety check: if they toggle the selection off, don't crash
                     if (!newName) return;
 
                     // 2. The Lookup: Find the EXACT match in ALL_EXERCISES (case-insensitive)
                     const match = ALL_EXERCISES.find((ex) => {
                       // If it's an object {label, value}, grab the label. If it's a string, grab the string.
-                      const textToCompare = typeof ex === "string" ? ex : ex.label;
-                      return textToCompare.toLowerCase() === newName.toLowerCase();
+                      const textToCompare =
+                        typeof ex === "string" ? ex : ex.label;
+                      return (
+                        textToCompare.toLowerCase() === newName.toLowerCase()
+                      );
                     });
 
                     // 3. Extract the properly capitalized name from the match
                     const properSpelling = match
-                      ? (typeof match === "string" ? match : match.label)
+                      ? typeof match === "string"
+                        ? match
+                        : match.label
                       : newName;
 
-                    // 4. Update the parent state!
-                    onUpdateName(properSpelling);
+                    // 👇 NEW: Extract the type from the match! (Fallback to freeweight)
+                    const exerciseType =
+                      match && match.type ? match.type : "freeweight";
+
+                    // 👇 NEW: Pass BOTH the name and the type to the parent!
+                    onUpdateName(properSpelling, exerciseType);
                   }}
                   placeholder="Select exercise..."
                 />
@@ -112,7 +125,7 @@ function ExerciseCard({ exercise, index, onUpdateName, onUpdateRepRange, onDelet
             {/* <CircleEllipsis className="w-5 h-5 text-white" /> */}
 
             {/* DELETE BUTTON */}
-            <button 
+            <button
               onClick={onDelete}
               className="p-2 transition-colors rounded-lg text-zinc-500 hover:text-red-400 hover:bg-red-400/10"
               title="Remove Exercise"
@@ -131,9 +144,11 @@ function ExerciseCard({ exercise, index, onUpdateName, onUpdateRepRange, onDelet
 export function ExerciseSelector({ exercises, onSave, onCancel }) {
   const [localExercises, setLocalExercises] = useState(exercises);
 
-  const updateExerciseName = (id, newName) => {
+  // Add newType as an argument (default to freeweight just in case)
+  const updateExerciseName = (id, newName, newType = "freeweight") => {
     const updated = localExercises.map((ex) =>
-      ex.id === id ? { ...ex, name: newName } : ex,
+      // Save BOTH the name and the type to the exercise object!
+      ex.id === id ? { ...ex, name: newName, type: newType } : ex,
     );
     setLocalExercises(updated);
   };
@@ -145,7 +160,6 @@ export function ExerciseSelector({ exercises, onSave, onCancel }) {
     setLocalExercises(updated);
   };
 
-
   const handleAddExercise = () => {
     const newExercise = {
       id: `temp-${Date.now()}`, // Generates a unique temporary ID based on the exact millisecond
@@ -154,7 +168,7 @@ export function ExerciseSelector({ exercises, onSave, onCancel }) {
       targetReps: "8-10",
       sets: [{ weight: "", reps: "" }], // pre-loads one empty set
     };
-    
+
     // Spread the existing exercises, and tack the new one onto the end!
     setLocalExercises([...localExercises, newExercise]);
   };
@@ -176,10 +190,7 @@ export function ExerciseSelector({ exercises, onSave, onCancel }) {
       >
         <div className="flex items-center justify-between px-4 py-3">
           <button className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60">
-            <ChevronLeftIcon 
-            className="w-5 h-5" 
-            onClick={onCancel}
-            />
+            <ChevronLeftIcon className="w-5 h-5" onClick={onCancel} />
           </button>
           <div className="text-center">
             <h1 className="text-lg font-semibold text-white">
@@ -187,14 +198,14 @@ export function ExerciseSelector({ exercises, onSave, onCancel }) {
             </h1>
             <p className="text-xs text-zinc-500">v2 • Jan 21, 2026</p>
           </div>
-     <button
+          <button
             className="flex items-center justify-center w-10 h-10 transition-colors border rounded-xl bg-zinc-900/60 border-zinc-800/50 text-zinc-400 hover:text-white hover:bg-zinc-800/60"
             onClick={() => {
               // 1. The Magic Cleanup: Filter out any exercise where the name is empty or just spaces
               const cleanedExercises = localExercises.filter(
-                (ex) => ex.name && ex.name.trim() !== ""
+                (ex) => ex.name && ex.name.trim() !== "",
               );
-              
+
               // 2. Pass the clean list up to App.jsx!
               onSave(cleanedExercises);
             }}
@@ -224,22 +235,20 @@ export function ExerciseSelector({ exercises, onSave, onCancel }) {
         {/* Exercise Cards */}
         <div>
           {localExercises.map((exercise, index) => (
-              <ExerciseCard
-                key={exercise.id}
-                exercise={exercise}
-                index={index}
-                onUpdateName={(newName) =>
-                  updateExerciseName(exercise.id, newName)
+            <ExerciseCard
+              key={exercise.id}
+              exercise={exercise}
+              index={index}
+             onUpdateName={(newName, newType) =>
+                  updateExerciseName(exercise.id, newName, newType)
                 }
-                 onUpdateRepRange={(newRepRange) =>
-                  updateExerciseRepRange(exercise.id, newRepRange)
-                }
-                onDelete={() => deleteExercise(exercise.id)}
-
-
-              />
-            ),
-          )}
+              onUpdateRepRange={(newRepRange) =>
+                updateExerciseRepRange(exercise.id, newRepRange)
+              }
+              onDelete={() => deleteExercise(exercise.id)}
+              
+            />
+          ))}
         </div>
 
         <motion.button
