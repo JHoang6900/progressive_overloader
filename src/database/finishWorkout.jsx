@@ -1,21 +1,19 @@
 import { supabase } from '../supabaseClient'; 
 import { calculateWeightValue } from '../lib/utils';
+import { fetchExercisePRs } from './fetchPreviousSets'; 
+import { calculatePRs } from '../utils/calculatePRs';
 
 export const saveWorkoutToCloud = async (workoutMetadata, exercisesArray) => {
-  // Only ONE try block to start the process
   try {
-    console.log("Starting cloud save...");
-
-    // 1. Guardrail announces if missing data
+    // 1. Guardrail
     if (!workoutMetadata?.location || !workoutMetadata?.userName) {
-      throw new Error("Missing User or Location data! Aborting save to prevent dirty data.");
+      throw new Error("Missing User or Location data!");
     }
 
-    // 2. INSERT PARENT (WORKOUT)
+    // 2. Insert workout
     const { data: workoutData, error: workoutError } = await supabase
       .from('workouts')
       .insert([{
-        // Strict mapping only!
         location: workoutMetadata.location,
         user_name: workoutMetadata.userName,
       }])
@@ -25,16 +23,15 @@ export const saveWorkoutToCloud = async (workoutMetadata, exercisesArray) => {
     if (workoutError) throw workoutError;
     const newWorkoutId = workoutData.id;
 
-    // 3. INSERT CHILDREN (EXERCISES)
+    // 3. Loop over exercises
     for (const exercise of exercisesArray) {
+
+      // Insert exercise → get newExerciseId
       const { data: exerciseData, error: exerciseError } = await supabase
         .from('exercises')
         .insert([{
           workout_id: newWorkoutId,
-          exercise_name: exercise.name, 
-          icon: exercise.icon || '',
-          target_reps: exercise.targetReps || '',
-          notes: exercise.notes || ''
+          exercise_name: exercise.name,
         }])
         .select()
         .single();
@@ -42,14 +39,23 @@ export const saveWorkoutToCloud = async (workoutMetadata, exercisesArray) => {
       if (exerciseError) throw exerciseError;
       const newExerciseId = exerciseData.id;
 
-      // 4. INSERT GRANDCHILDREN (SETS)
-      const setsToInsert = exercise.sets.map((set, index) => ({
+      // 3.5 PR Intercept
+      const { maxWeight, maxReps } = await fetchExercisePRs(
+        workoutMetadata.userName,
+        exercise.name
+      );
+
+      const evaluatedSets = calculatePRs(exercise.sets, maxWeight, maxReps);
+
+      // 4. Insert sets
+      const setsToInsert = evaluatedSets.map((set, index) => ({
         exercise_id: newExerciseId,
-        set_order: index + 1, 
+        set_order: index + 1,
         weight_display: set.weight,
-        weight_value: calculateWeightValue(set.weight), 
+        weight_value: calculateWeightValue(set.weight),
         reps: set.reps,
-        completed: set.completed || false
+        completed: set.completed || false,
+        is_pr: set.is_pr
       }));
 
       if (setsToInsert.length > 0) {
@@ -62,11 +68,10 @@ export const saveWorkoutToCloud = async (workoutMetadata, exercisesArray) => {
     }
 
     console.log("✅ Workout completely saved to the cloud!");
-    return true; 
+    return true;
 
-  // ONE catch block to catch any errors from above
   } catch (error) {
     console.error("❌ Error saving workout:", error.message);
-    return false; 
+    return false;
   }
 };
