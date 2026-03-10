@@ -97,87 +97,85 @@ export default function App() {
 
   // Send the data to Supabase and then show the Summary Screen if successful
   const handleFinishWorkout = async (workoutMetadata) => {
-    // 👇 STRICT MODE: A set only counts if it has BOTH weight AND reps.
-    const hasValidSet = (set) => set.weight && set.reps;
-    const hasAnySets = (ex) => ex.sets?.some(hasValidSet);
 
-    // 👇 STRICT MODE: A row is a problem if it is missing weight OR missing reps.
-    const hasProblemRow = (ex) =>
-      ex.sets?.some((set) => !set.weight || !set.reps);
+    // --- 1. SET DEFINITIONS (The 3 States of a Set) ---
+    const isValidRep = (repValue) => {
+      const parsed = parseInt(repValue, 10);
+      return !isNaN(parsed) && parsed > 0;
+    };
+
+    // State A: Perfectly valid and ready to save
+    const isValidSet = (set) => set.weight && set.reps && isValidRep(set.reps);
+
+    // State B: Completely untouched by the user
+    const isBlankSet = (set) => !set.weight && !set.reps;
+
+    // State C: A problem (half-filled, or contains invalid characters like "Q")
+    const isProblemSet = (set) => !isBlankSet(set) && !isValidSet(set);
+
+    const hasAnyValidSets = (ex) => ex.sets?.some(isValidSet);
+    const hasAnyProblemSets = (ex) => ex.sets?.some(isProblemSet);
+
+
+    // --- 2. THE GUARDRAILS ---
 
     // Guardrail 1: Empty Gym Floor
     if (!currentExercises || currentExercises.length === 0) {
-      alert(
-        "You need to add at least one exercise before finishing your workout!",
-      );
+      alert("You need to add at least one exercise before finishing your workout!");
       return;
     }
 
     // Guardrail 2: Missing Names
     const hasUnnamedExercises = currentExercises.some(
-      (ex) => !ex.name || ex.name.trim() === "",
+      (ex) => !ex.name || ex.name.trim() === ""
     );
 
     if (hasUnnamedExercises) {
-      alert(
-        "Oops! Please select an exercise name for all your blank cards before finishing.",
-      );
+      alert("Oops! Please select an exercise name for all your blank cards before finishing.");
       return;
     }
 
-    // Guardrail 3: The "No Ghost Rows Allowed" Rule
-    const incompleteExercises = currentExercises.filter(
-      (ex) => !hasAnySets(ex),
-    );
-
-    if (incompleteExercises.length > 0) {
-      const problemExercises = incompleteExercises
-        .map((ex) => ex.name)
-        .join(", ");
-      alert(
-        `You have empty exercises! Please fill out at least one set for: ${problemExercises}, or remove them to finish.`,
-      );
-      return;
-    }
-
-    // 👇 Guardrail 4: The "No Half-Empty Sets" Rule
-    // Find exercises that have at least one good set, BUT also have a half-empty row hanging out
-    const exercisesWithProblems = currentExercises.filter(
-      (ex) => hasAnySets(ex) && hasProblemRow(ex),
-    );
+    // Guardrail 3: The "Bad Data" Rule (Catches the "Q")
+    // We check for bad data BEFORE checking for empty exercises.
+    const exercisesWithProblems = currentExercises.filter(hasAnyProblemSets);
 
     if (exercisesWithProblems.length > 0) {
-      const problemNames = exercisesWithProblems
-        .map((ex) => ex.name)
-        .join(", ");
-      alert(
-        `You have incomplete sets in: ${problemNames}! Please enter BOTH weight and reps for every row, or delete the empty ones.`,
-      );
+      const problemNames = exercisesWithProblems.map((ex) => ex.name).join(", ");
+      alert(`You have invalid sets in: ${problemNames}! Please ensure BOTH weight and reps are filled out, and that Reps is a valid number.`);
       return;
     }
 
+    // Guardrail 4: The "Ghost Rows" Rule
+    // If we made it here, there is NO bad data. Now we check if they left an exercise completely blank.
+    const incompleteExercises = currentExercises.filter((ex) => !hasAnyValidSets(ex));
+
+    if (incompleteExercises.length > 0) {
+      const problemExercises = incompleteExercises.map((ex) => ex.name).join(", ");
+      alert(`You have empty exercises! Please fill out at least one valid set for: ${problemExercises}, or remove them to finish.`);
+      return;
+    }
+
+
+    // --- 3. THE SAVE PROCESS ---
     console.log("Finish button clicked! Starting save...");
     console.log("Finish button clicked! Received metadata:", workoutMetadata);
 
-    // Extra Last Resort Guardrail: The payload scrubber (just in case! -- theoretically shouldn't ever need to do any work because of the above checks, but it's good to have this safety net to prevent dirty data from sneaking into the database)
-    const scrubbedExercises = currentExercises.filter(hasAnySets);
+    // Extra Last Resort Guardrail: The payload scrubber
+    // We use the new hasAnyValidSets definition here to ensure only perfect data passes
+    const scrubbedExercises = currentExercises.filter(hasAnyValidSets);
 
-    // 👇 1. Let's call the package 'result' instead of 'isSaved'
     const result = await saveWorkoutToCloud(
       { userName: currentUser, location: currentLocation },
       scrubbedExercises,
     );
 
-    // 👇 2. Look inside the package for 'success'
     if (result.success) {
-      // 👇 3. Look inside the package for 'prs' and save them to App.jsx's state!
       setRecentPRs(result.prs);
-
       setIsFinished(true);
     } else {
       alert("Oops! There was an error saving your workout to the cloud.");
     }
-  };
+};
 
   return (
     <>
