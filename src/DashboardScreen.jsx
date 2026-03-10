@@ -6,7 +6,7 @@ import { Plus, Calendar, MapPin, Dumbbell, ArrowLeft } from "lucide-react";
 // Adjust this import path depending on where you saved your fetch function!
 import { fetchUserHistory } from "./database/fetchUserHistory";
 
-export default function DashboardScreen({ currentUser, onStartWorkout, onBack }) {
+export default function DashboardScreen({ currentUser, onStartWorkout, onBack, onWorkoutClick}) {
   const [history, setHistory] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -88,7 +88,8 @@ export default function DashboardScreen({ currentUser, onStartWorkout, onBack })
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }} // Staggers the card animations!
-                className="p-4 transition-colors border bg-zinc-900/50 rounded-2xl border-zinc-800/50 hover:border-zinc-700"
+                className="p-4 transition-colors border cursor-pointer rounded-2xl bg-zinc-900/50 border-zinc-800/50 hover:border-zinc-900 hover:bg-zinc-800/50"
+                onClick={() => onWorkoutClick(workout.id)}
               >
                {/* Card Header: Date & Location */}
 <div className="flex items-center justify-between pb-3 mb-4 border-b border-zinc-800">

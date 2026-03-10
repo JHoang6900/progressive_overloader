@@ -14,6 +14,8 @@ import { WORKOUT_PRESETS, BLANK_PRESET } from "./data/presets";
 import WelcomeScreen from "./WelcomeScreen";
 import DashboardScreen from "./DashboardScreen";
 import PresetScreen from "./PresetScreen";
+import WorkoutDetailsScreen from "./WorkoutDetailsScreen";
+import { set } from "date-fns";
 
 // Define the initial state of exercises here
 const INITIAL_DATA = [];
@@ -32,6 +34,9 @@ export default function App() {
   // 2. View States
   const [isEditing, setIsEditing] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
+
+  const [isViewingDetails, setIsViewingDetails] = useState(false);
+  const [selectedWorkoutId, setSelectedWorkoutId] = useState(null);
 
   // State to hold trophies between the Workout and Summary screens
   const [recentPRs, setRecentPRs] = useState([]);
@@ -143,6 +148,8 @@ export default function App() {
       alert("Oops! There was an error saving your workout to the cloud.");
     }
   };
+
+  
   return (
     <>
       {/* ROUTE 1: The Gatekeeper (No user selected yet) */}
@@ -156,7 +163,7 @@ export default function App() {
       )}
 
       {/* ROUTE 2: The Dashboard (User selected, but hasn't started lifting) */}
-      {currentUser && !isSelectingPreset && !isWorkoutActive && !isFinished && (
+      {currentUser && !isSelectingPreset && !isWorkoutActive && !isFinished && !isViewingDetails && (
         <DashboardScreen
           currentUser={currentUser}
           // When they click the '+', we flip the traffic cop to true!
@@ -164,7 +171,21 @@ export default function App() {
           // If they want to change users, we clear the name to send them back to Welcome
           onBack={() => {
             setCurrentUser("");
-            setCurrentLocation("");
+            setCurrentLocation("");}}
+          
+          onWorkoutClick={(workoutId) => {
+            setSelectedWorkoutId(workoutId);
+            setIsViewingDetails(true);
+          }}
+        />
+      )}
+
+      {isViewingDetails && (
+        <WorkoutDetailsScreen 
+          workoutId={selectedWorkoutId}
+          onBack={() => {
+            setSelectedWorkoutId(null);
+            setIsViewingDetails(false); // 👇 Turns it off and goes back to dashboard
           }}
         />
       )}
