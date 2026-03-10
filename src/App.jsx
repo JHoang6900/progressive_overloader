@@ -149,6 +149,56 @@ export default function App() {
     return () => window.removeEventListener("online", syncOfflineQueue);
   }, []);
 
+  // ☀️ SCREEN-STAY-ON: Keep the screen awake during active workouts
+  useEffect(() => {
+    let wakeLock = null;
+
+    const requestWakeLock = async () => {
+      try {
+        // First, check if the user's browser actually supports this modern feature
+        if ('wakeLock' in navigator) {
+          wakeLock = await navigator.wakeLock.request('screen');
+          console.log('☀️ Screen Wake Lock activated. Phone will not sleep!');
+        }
+      } catch (err) {
+        // This usually only fails if the battery is critically low
+        console.warn('Wake Lock request denied or failed:', err.message);
+      }
+    };
+
+    const releaseWakeLock = async () => {
+      if (wakeLock !== null) {
+        await wakeLock.release();
+        wakeLock = null;
+        console.log('🌙 Screen Wake Lock released. Phone can sleep normally.');
+      }
+    };
+
+    // 1. The Main Trigger
+    if (isWorkoutActive && !isFinished) {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+
+    // 2. The "Tab Switch" Safety Net
+    // If the user switches to Spotify to change a song, the OS automatically kills the lock.
+    // We need to politely ask for it back the moment they switch back to our app!
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && isWorkoutActive && !isFinished) {
+        requestWakeLock();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // 3. The Cleanup Crew
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      releaseWakeLock();
+    };
+  }, [isWorkoutActive, isFinished]);
+
   // Send the data to Supabase and then show the Summary Screen if successful
   const handleFinishWorkout = async (workoutMetadata) => {
     // --- 1. SET DEFINITIONS (The 3 States of a Set) ---
