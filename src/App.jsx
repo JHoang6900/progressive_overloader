@@ -33,11 +33,14 @@ export default function App() {
   const [currentExercises, setCurrentExercises] = useState(() => {
     const saved = localStorage.getItem("active_exercises");
     if (!saved) return [];
-    
+
     try {
       return JSON.parse(saved); // Try to read it
     } catch (error) {
-      console.error("Corrupted workout data found in cache. Wiping clean.", error);
+      console.error(
+        "Corrupted workout data found in cache. Wiping clean.",
+        error,
+      );
       localStorage.removeItem("active_exercises"); // Nuke the corrupted data
       return []; // Start fresh so the app doesn't crash
     }
@@ -81,23 +84,73 @@ export default function App() {
     if (currentUser) localStorage.setItem("current_user", currentUser);
     else localStorage.removeItem("current_user");
 
-    if (currentLocation) localStorage.setItem("current_location", currentLocation);
+    if (currentLocation)
+      localStorage.setItem("current_location", currentLocation);
     else localStorage.removeItem("current_location");
 
     // 2. Save the Workout status
     localStorage.setItem("is_workout_active", isWorkoutActive);
-    
+
     // 3. Save the actual exercises ONLY if a workout is active
     if (isWorkoutActive) {
-      localStorage.setItem("active_exercises", JSON.stringify(currentExercises));
+      localStorage.setItem(
+        "active_exercises",
+        JSON.stringify(currentExercises),
+      );
     } else {
       localStorage.removeItem("active_exercises");
     }
   }, [currentUser, currentLocation, isWorkoutActive, currentExercises]);
 
+  // 📡 THE BACKGROUND WORKER: Syncs offline workouts when internet returns
+  useEffect(() => {
+    const syncOfflineQueue = async () => {
+      // 1. Abort if we don't have internet, or if the queue is empty
+      if (!navigator.onLine) return;
+
+      const queueStr = localStorage.getItem("offline_workout_queue");
+      if (!queueStr) return;
+
+      const queue = JSON.parse(queueStr);
+      if (queue.length === 0) return;
+
+      console.log(
+        `📡 Internet is active! Attempting to sync ${queue.length} stashed workouts...`,
+      );
+
+      // 2. THE PULL AND CLEAR
+      // Wipe the queue from the hard drive so we don't create duplicates.
+      // (If the save fails again, saveWorkoutToCloud will automatically put them back!)
+      localStorage.removeItem("offline_workout_queue");
+
+      // 3. Process the queue one by one
+      for (const stashedWorkout of queue) {
+        console.log(
+          `🔄 Syncing stashed workout from ${stashedWorkout.timestamp}...`,
+        );
+
+        // We use our existing, untouched backend function!
+        await saveWorkoutToCloud(
+          stashedWorkout.workoutMetadata,
+          stashedWorkout.exercisesArray,
+        );
+      }
+
+      console.log("✅ Offline sync complete.");
+    };
+
+    // Trigger 1: Run on initial app boot-up
+    syncOfflineQueue();
+
+    // Trigger 2: Listen for the exact moment the phone connects to a network
+    window.addEventListener("online", syncOfflineQueue);
+
+    // Cleanup the listener if the app closes
+    return () => window.removeEventListener("online", syncOfflineQueue);
+  }, []);
+
   // Send the data to Supabase and then show the Summary Screen if successful
   const handleFinishWorkout = async (workoutMetadata) => {
-
     // --- 1. SET DEFINITIONS (The 3 States of a Set) ---
     const isValidRep = (repValue) => {
       const parsed = parseInt(repValue, 10);
@@ -116,22 +169,25 @@ export default function App() {
     const hasAnyValidSets = (ex) => ex.sets?.some(isValidSet);
     const hasAnyProblemSets = (ex) => ex.sets?.some(isProblemSet);
 
-
     // --- 2. THE GUARDRAILS ---
 
     // Guardrail 1: Empty Gym Floor
     if (!currentExercises || currentExercises.length === 0) {
-      alert("You need to add at least one exercise before finishing your workout!");
+      alert(
+        "You need to add at least one exercise before finishing your workout!",
+      );
       return;
     }
 
     // Guardrail 2: Missing Names
     const hasUnnamedExercises = currentExercises.some(
-      (ex) => !ex.name || ex.name.trim() === ""
+      (ex) => !ex.name || ex.name.trim() === "",
     );
 
     if (hasUnnamedExercises) {
-      alert("Oops! Please select an exercise name for all your blank cards before finishing.");
+      alert(
+        "Oops! Please select an exercise name for all your blank cards before finishing.",
+      );
       return;
     }
 
@@ -140,21 +196,30 @@ export default function App() {
     const exercisesWithProblems = currentExercises.filter(hasAnyProblemSets);
 
     if (exercisesWithProblems.length > 0) {
-      const problemNames = exercisesWithProblems.map((ex) => ex.name).join(", ");
-      alert(`You have invalid sets in: ${problemNames}! Please ensure BOTH weight and reps are filled out, and that Reps is a valid number.`);
+      const problemNames = exercisesWithProblems
+        .map((ex) => ex.name)
+        .join(", ");
+      alert(
+        `You have invalid sets in: ${problemNames}! Please ensure BOTH weight and reps are filled out, and that Reps is a valid number.`,
+      );
       return;
     }
 
     // Guardrail 4: The "Ghost Rows" Rule
     // If we made it here, there is NO bad data. Now we check if they left an exercise completely blank.
-    const incompleteExercises = currentExercises.filter((ex) => !hasAnyValidSets(ex));
+    const incompleteExercises = currentExercises.filter(
+      (ex) => !hasAnyValidSets(ex),
+    );
 
     if (incompleteExercises.length > 0) {
-      const problemExercises = incompleteExercises.map((ex) => ex.name).join(", ");
-      alert(`You have empty exercises! Please fill out at least one valid set for: ${problemExercises}, or remove them to finish.`);
+      const problemExercises = incompleteExercises
+        .map((ex) => ex.name)
+        .join(", ");
+      alert(
+        `You have empty exercises! Please fill out at least one valid set for: ${problemExercises}, or remove them to finish.`,
+      );
       return;
     }
-
 
     // --- 3. THE SAVE PROCESS ---
     console.log("Finish button clicked! Starting save...");
@@ -172,10 +237,16 @@ export default function App() {
     if (result.success) {
       setRecentPRs(result.prs);
       setIsFinished(true);
+      // data/wifi-deadzone catch: Let the user know if they are operating offline!
+      if (result.offline) {
+        alert(
+          "Connection issue detected. Your workout was saved locally and will sync when you regain internet!",
+        );
+      }
     } else {
-      alert("Oops! There was an error saving your workout to the cloud.");
+      alert("Oops! There was a critical error saving your workout.");
     }
-};
+  };
 
   return (
     <>

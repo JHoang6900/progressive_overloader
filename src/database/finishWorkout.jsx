@@ -91,7 +91,35 @@ console.log("✅ Workout saved! PRs earned:", earnedPRs);
     return { success: true, prs: earnedPRs };
 
   } catch (error) {
-    console.error("❌ Error saving workout:", error.message);
-    return { success: false, prs: [] };
+    console.error("❌ Error saving workout to cloud:", error.message);
+
+    // 📦 STASHING: If Supabase fails, we save the payload to localStorage
+    try {
+      // Package the workout exactly how Supabase will need it later
+      const offlinePayload = {
+        id: Date.now(), // Give it a temporary unique ID
+        workoutMetadata,
+        exercisesArray,
+        timestamp: new Date().toISOString() // Stamp it so we know when it happened
+      };
+
+      // Grab the existing queue (or start a new one)
+      const existingQueue = JSON.parse(localStorage.getItem('offline_workout_queue') || '[]');
+      
+      // Add this workout to the queue and save it back
+      existingQueue.push(offlinePayload);
+      localStorage.setItem('offline_workout_queue', JSON.stringify(existingQueue));
+
+      console.log("💾 Workout safely stashed in local offline queue.");
+
+      // Return success: true so the UI doesn't crash, but add an 'offline' flag!
+      // ( PRs can't be calculated offline, so we return an empty array)
+      return { success: true, offline: true, prs: [] };
+
+    } catch (localError) {
+      // If even the localStorage fails (e.g., they ran out of phone storage), THEN we hard fail.
+      console.error("Fatal Error: Could not save to cloud OR local storage.", localError);
+      return { success: false, prs: [] };
+    }
   }
 };
