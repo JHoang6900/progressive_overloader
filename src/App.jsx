@@ -17,19 +17,31 @@ import PresetScreen from "./PresetScreen";
 import WorkoutDetailsScreen from "./WorkoutDetailsScreen";
 import { set } from "date-fns";
 
-// Define the initial state of exercises here
-const INITIAL_DATA = [];
-
 export default function App() {
-  const [currentUser, setCurrentUser] = useState("");
-  const [currentLocation, setCurrentLocation] = useState("");
+  const [currentUser, setCurrentUser] = useState(
+    () => localStorage.getItem("current_user") || "",
+  );
+  const [currentLocation, setCurrentLocation] = useState(
+    () => localStorage.getItem("current_location") || "",
+  );
 
-  const [isWorkoutActive, setIsWorkoutActive] = useState(false);
+  const [isWorkoutActive, setIsWorkoutActive] = useState(
+    () => localStorage.getItem("is_workout_active") === "true",
+  );
   const [isSelectingPreset, setIsSelectingPreset] = useState(false);
 
-  // 1. The "Single Source of Truth" for data
-  const [currentExercises, setCurrentExercises] = useState(INITIAL_DATA);
-  const [selectedPresetKey, setSelectedPresetKey] = useState("");
+  const [currentExercises, setCurrentExercises] = useState(() => {
+    const saved = localStorage.getItem("active_exercises");
+    if (!saved) return [];
+    
+    try {
+      return JSON.parse(saved); // Try to read it
+    } catch (error) {
+      console.error("Corrupted workout data found in cache. Wiping clean.", error);
+      localStorage.removeItem("active_exercises"); // Nuke the corrupted data
+      return []; // Start fresh so the app doesn't crash
+    }
+  });
 
   // 2. View States
   const [isEditing, setIsEditing] = useState(false);
@@ -63,6 +75,26 @@ export default function App() {
     testConnection();
   }, []);
 
+  // 💾 AUTO-SAVER: Mirrors react state to localStorage
+  useEffect(() => {
+    // 1. Save or clear the User profile
+    if (currentUser) localStorage.setItem("current_user", currentUser);
+    else localStorage.removeItem("current_user");
+
+    if (currentLocation) localStorage.setItem("current_location", currentLocation);
+    else localStorage.removeItem("current_location");
+
+    // 2. Save the Workout status
+    localStorage.setItem("is_workout_active", isWorkoutActive);
+    
+    // 3. Save the actual exercises ONLY if a workout is active
+    if (isWorkoutActive) {
+      localStorage.setItem("active_exercises", JSON.stringify(currentExercises));
+    } else {
+      localStorage.removeItem("active_exercises");
+    }
+  }, [currentUser, currentLocation, isWorkoutActive, currentExercises]);
+
   // Send the data to Supabase and then show the Summary Screen if successful
   const handleFinishWorkout = async (workoutMetadata) => {
     // 👇 STRICT MODE: A set only counts if it has BOTH weight AND reps.
@@ -72,8 +104,6 @@ export default function App() {
     // 👇 STRICT MODE: A row is a problem if it is missing weight OR missing reps.
     const hasProblemRow = (ex) =>
       ex.sets?.some((set) => !set.weight || !set.reps);
-
-
 
     // Guardrail 1: Empty Gym Floor
     if (!currentExercises || currentExercises.length === 0) {
@@ -121,7 +151,7 @@ export default function App() {
         .map((ex) => ex.name)
         .join(", ");
       alert(
-        `You have incomplete sets in: ${problemNames}. You must enter BOTH weight and reps for every row, or delete the empty ones!`,
+        `You have incomplete sets in: ${problemNames}! Please enter BOTH weight and reps for every row, or delete the empty ones.`,
       );
       return;
     }
@@ -132,7 +162,7 @@ export default function App() {
     // Extra Last Resort Guardrail: The payload scrubber (just in case! -- theoretically shouldn't ever need to do any work because of the above checks, but it's good to have this safety net to prevent dirty data from sneaking into the database)
     const scrubbedExercises = currentExercises.filter(hasAnySets);
 
-// 👇 1. Let's call the package 'result' instead of 'isSaved'
+    // 👇 1. Let's call the package 'result' instead of 'isSaved'
     const result = await saveWorkoutToCloud(
       { userName: currentUser, location: currentLocation },
       scrubbedExercises,
@@ -142,14 +172,13 @@ export default function App() {
     if (result.success) {
       // 👇 3. Look inside the package for 'prs' and save them to App.jsx's state!
       setRecentPRs(result.prs);
-      
-      setIsFinished(true); 
+
+      setIsFinished(true);
     } else {
       alert("Oops! There was an error saving your workout to the cloud.");
     }
   };
 
-  
   return (
     <>
       {/* ROUTE 1: The Gatekeeper (No user selected yet) */}
@@ -163,25 +192,30 @@ export default function App() {
       )}
 
       {/* ROUTE 2: The Dashboard (User selected, but hasn't started lifting) */}
-      {currentUser && !isSelectingPreset && !isWorkoutActive && !isFinished && !isViewingDetails && (
-        <DashboardScreen
-          currentUser={currentUser}
-          // When they click the '+', we flip the traffic cop to true!
-          onStartWorkout={() => setIsSelectingPreset(true)}
-          // If they want to change users, we clear the name to send them back to Welcome
-          onBack={() => {
-            setCurrentUser("");
-            setCurrentLocation("");}}
-          
-          onWorkoutClick={(workoutId) => {
-            setSelectedWorkoutId(workoutId);
-            setIsViewingDetails(true);
-          }}
-        />
-      )}
+      {currentUser &&
+        !isSelectingPreset &&
+        !isWorkoutActive &&
+        !isFinished &&
+        !isViewingDetails && (
+          <DashboardScreen
+            currentUser={currentUser}
+            // When they click the '+', we flip the traffic cop to true!
+            onStartWorkout={() => setIsSelectingPreset(true)}
+            // If they want to change users, we clear the name to send them back to Welcome
+            onBack={() => {
+              setCurrentUser("");
+              setCurrentLocation("");
+              // This should auto-trigger the useEffect to wipe the user cache..?
+            }}
+            onWorkoutClick={(workoutId) => {
+              setSelectedWorkoutId(workoutId);
+              setIsViewingDetails(true);
+            }}
+          />
+        )}
 
       {isViewingDetails && (
-        <WorkoutDetailsScreen 
+        <WorkoutDetailsScreen
           workoutId={selectedWorkoutId}
           onBack={() => {
             setSelectedWorkoutId(null);
