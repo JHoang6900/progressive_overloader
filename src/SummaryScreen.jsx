@@ -33,20 +33,33 @@ export default function SummaryScreen({ exercises, onClose, currentUser, recentP
 
   const exercisesCompleted = exercises.filter(ex => ex.sets.some(s => s.completed)).length;
 
+
+  // 🧪 DEV TEST: Forcing a massive list of PRs to test the scrollbar
+  // TODO: Delete this after testing!111
+  // recentPRs = Array.from({ length: 20 }, (_, i) => ({
+  //   exerciseName: `Mock Heavy Lift ${i + 1}`,
+  //   weight: 200 + (i * 10),
+  //   reps: 5 + (i % 3)
+  // }));
+
   return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 text-white bg-zinc-950">
+// The Outer Wrapper: Fixed to the screen, but allows vertical scrolling!
+    <div className="fixed inset-0 z-50 overflow-y-auto text-white bg-zinc-950">
       
-      {/* CONFETTI LAYER */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      {/* 2. CONFETTI LAYER: Changed to 'fixed' so it stays on screen even when we scroll down */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
          <Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={500} gravity={0.15} />
       </div>
 
-      <motion.div 
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ type: "spring", duration: 0.5 }}
-        className="relative z-10 w-full max-w-md space-y-8 text-center"
-      >
+      {/* Inner Wrapper: ensures it centers if small, but scrolls safely if large */}
+      <div className="flex flex-col items-center justify-start min-h-screen px-4 py-16 sm:justify-center">
+        
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ type: "spring", duration: 0.5 }}
+          className="relative z-10 w-full max-w-md space-y-8 text-center"
+        >
         
         {/* HEADER */}
         <div className="space-y-4">
@@ -175,6 +188,7 @@ export default function SummaryScreen({ exercises, onClose, currentUser, recentP
         </motion.button>
 
       </motion.div>
+      </div>
     </div>
   );
 }
