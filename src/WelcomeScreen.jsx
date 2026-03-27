@@ -20,19 +20,22 @@ export default function WelcomeScreen({ onStart }) {
     onStart(name, location);
   };
 
-  // --- CONSTANTS ---
-  const LOCATION_OPTIONS = [
-    { value: "MACU-M", label: "MACU-M" },
-    { value: "MACU-T", label: "MACU-T" },
-    { value: "EOS-SJ", label: "EOS-SJ" },
-    { value: "EOS-TV", label: "EOS-TV" },
-  ];
+// --- CONSTANTS (Powered by Environment Variables) ---
+  
+  // 1. Grab the raw string from Vite, or provide a safe fallback if it fails
+  const rawGymString = import.meta.env.VITE_GYM_OPTIONS || "The Gym of Guests";
+  const rawUserString = import.meta.env.VITE_USER_OPTIONS || "Guest";
 
-  const USER_OPTIONS = [
-    { value: "JHoang", label: "JHoang" },
-    { value: "Miss Tang", label: "Miss Tang" },
-    { value: "Guest", label: "Guest" },
-  ];
+  // 2. Split the string by commas, trim accidental spaces, and map into objects
+  const LOCATION_OPTIONS = rawGymString.split(",").map((gym) => {
+    const cleanName = gym.trim();
+    return { value: cleanName, label: cleanName };
+  });
+
+  const USER_OPTIONS = rawUserString.split(",").map((user) => {
+    const cleanName = user.trim();
+    return { value: cleanName, label: cleanName };
+  });
 
   return (
     <div className="flex flex-col items-center justify-center h-screen p-6 bg-zinc-950 text-zinc-50">
