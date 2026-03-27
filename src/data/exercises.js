@@ -8,7 +8,6 @@
 //   { value: "machine chest press", label: "Machine Chest Press" },
 //   { value: "cable fly", label: "Cable Fly" },
 //   { value: "pull-ups", label: "Pull-Ups" },
-//   { value: "lat pulldown", label: "Lat Pulldown" },
 //   { value: "leg extensions", label: "Leg Extensions" },
 //   { value: "squat", label: "Squat" },
 //   { value: "deadlift", label: "Deadlift" },
@@ -27,8 +26,9 @@ export const ALL_EXERCISES = [
   { value: "Barbell Benchpress", label: "Barbell Benchpress", type: "freeweight" },
   { value: "Pull-Ups", label: "Pull-Ups", type: "bodyweight" },
   { value: "Leg Press", label: "Leg Press", type: "machine" },
-  { value: "Glute Curls", label: "Glute Curls", type: "machine" },
+  { value: "Leg Curls", label: "Leg Curls", type: "machine" },
   { value: "Kneeling Single Arm Cable Row", label: "Kneeling Single Arm Cable Row", type: "cable" },
+  { value: "Lat Pulldown", label: "Lat Pulldown", type: "machine"},
   { value: "Wide Grip Lat Pulldown", label: "Wide Grip Lat Pulldown", type: "machine" },
   { value: "Close Grip Cable Row", label: "Close Grip Cable Row", type: "cable" },
   { value: "Cross Cable Tricep Extension", label: "Cross Cable Tricep Extension", type: "cable" },
@@ -62,8 +62,8 @@ export const ALL_EXERCISES = [
   { value: "Dips", label: "Dips", type: "bodyweight" },
   { value: "Bayesian Cable Curls", label: "Bayesian Cable Curls", type: "cable" },
   { value: "Supinated Incline Curls", label: "Supinated Incline Curls", type: "freeweight"},
-  { value: "Test Squat 999", label: "Test Squat 999", type: "freeweight"},
-  { value: "Test Cable 999", label: "Test Cable 999", type: "cable"},
+  // { value: "Test Squat 999", label: "Test Squat 999", type: "freeweight"},
+  // { value: "Test Cable 999", label: "Test Cable 999", type: "cable"},
 ];
 
 
