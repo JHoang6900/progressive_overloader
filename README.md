@@ -7,7 +7,8 @@
 **Description**: Progressive Overloader is a progressive web application (PWA) (wordplay not intended...) that allows users to track their incremental workout progress over time. The core principle of this fitness methodology is similar to iterative software development; by adding small, manageable weight over time (often in the form of 2.5-5lbs), the user challenges their muscle fibers to adapt. The result is that many small changes over time lead to great results.  
 
 **The Problem:** Tracking progressive overload with a simple notes app is messy and mentally taxing. Lifters often forget the exact weight or rep scheme they used during their last session. That mental overhead of organizing this data creates friction that disrupts the actual workout, leaving users guessing and unknowingly sabotaging their workout sessions. 
-**The Solution & Key Learnings:** This frictionless, mobile-first application acts as a highly optimized digital training log. Building this project provided deep, hands-on experience in **relational database design** (normalizing deeply nested frontend state into strict PostgreSQL tables), **offline-first caching** (handling unreliable gym Wi-Fi), and **modern DevOps** (engineering a multi-environment CI/CD pipeline via Vercel).
+
+**The Solution & Key Learnings:** This frictionless, mobile-first application acts as a highly optimized digital training log. Building this project provided deep, hands-on experience in *relational database design* (normalizing deeply nested frontend state into strict PostgreSQL tables), *offline-first caching* (handling unreliable gym Wi-Fi), and *modern DevOps* (engineering a multi-environment CI/CD pipeline via Vercel).
 
 ## Table of Contents
 
@@ -21,7 +22,8 @@
 
 ## Installation
 
-This application is deployed with a live demo link. Please refer to [Live Deployed Demo Link](#live-deployed-demo-link) to view it without installation. 
+This application is deployed with a live demo link. 
+Please refer to [Live Deployed Demo Link](#live-deployed-demo-link) to view it without installation. 
 
 However, if you'd like to install this application please follow the following steps:
 
