@@ -252,6 +252,13 @@ export default function WorkoutDetailsScreen({ workoutId, onBack }) {
             <ReadOnlyExerciseCard key={exercise.id} exercise={exercise} index={index} />
           ))}
         </div>
+
+        {/* Workout Footer / Debug ID/Info */}
+<div className="pt-4 mt-8 border-t border-gray-200 dark:border-gray-800">
+  <p className="font-mono text-xs text-center text-gray-400 break-all dark:text-gray-500">
+    Workout ID: {workout.id}
+  </p>
+</div>
       </main>
     </div>
   );
