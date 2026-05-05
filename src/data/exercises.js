@@ -27,6 +27,7 @@ export const ALL_EXERCISES = [
   { value: "Pull-Ups", label: "Pull-Ups", type: "bodyweight" },
   { value: "Leg Press", label: "Leg Press", type: "machine" },
   { value: "Leg Curls", label: "Leg Curls", type: "machine" },
+  { value: "Leg Extensions", label: "Leg Extensions", type: "machine" },
   { value: "Kneeling Single Arm Cable Row", label: "Kneeling Single Arm Cable Row", type: "cable" },
   { value: "Lat Pulldown", label: "Lat Pulldown", type: "machine"},
   { value: "Wide Grip Lat Pulldown", label: "Wide Grip Lat Pulldown", type: "machine" },
@@ -62,8 +63,8 @@ export const ALL_EXERCISES = [
   { value: "Dips", label: "Dips", type: "bodyweight" },
   { value: "Bayesian Cable Curls", label: "Bayesian Cable Curls", type: "cable" },
   { value: "Supinated Incline Curls", label: "Supinated Incline Curls", type: "freeweight"},
-  // { value: "Test Squat 999", label: "Test Squat 999", type: "freeweight"},
-  // { value: "Test Cable 999", label: "Test Cable 999", type: "cable"},
+  { value: "Test Exercise", label: "Test Exercise", type: "freeweight"}, // used now for unaccounted for exercises
+  { value: "Test Cable", label: "Test Cable", type: "cable"}, // used now for unaccounted for exercises
 ];
 
 
